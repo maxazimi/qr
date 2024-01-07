@@ -1,3 +1,5 @@
+// https://github.com/g45t345rt/g45w/blob/master/theme/theme.go
+
 package theme
 
 import (
@@ -7,12 +9,11 @@ import (
 	"gioui.org/op/paint"
 )
 
-// from https://github.com/g45t345rt/g45w/blob/master/theme/theme.go
-
 var (
-	whiteColor = color.NRGBA{R: 250, G: 250, B: 250, A: 255}
-	blackColor = color.NRGBA{R: 10, G: 10, B: 10, A: 255}
-	blueColor  = color.NRGBA{R: 2, G: 62, B: 138, A: 255}
+	WhiteColor = color.NRGBA{R: 250, G: 250, B: 250, A: 255}
+	BlackColor = color.NRGBA{R: 10, G: 10, B: 10, A: 255}
+	GreyColor  = color.NRGBA{R: 60, G: 60, B: 60, A: 255}
+	BlueColor  = color.NRGBA{R: 0, G: 0, B: 255, A: 255}
 )
 
 type Theme struct {
@@ -34,8 +35,6 @@ type Theme struct {
 
 	// Bottom Bar
 	BottomBarBgColor          color.NRGBA
-	BottomBarWalletBgColor    color.NRGBA
-	BottomBarWalletTextColor  color.NRGBA
 	BottomButtonColors        components.ButtonColors
 	BottomButtonSelectedColor color.NRGBA
 
@@ -45,6 +44,9 @@ type Theme struct {
 	NodeStatusDotGreenColor  color.NRGBA
 	NodeStatusDotYellowColor color.NRGBA
 	NodeStatusDotRedColor    color.NRGBA
+
+	// Input
+	InputColors components.InputColors
 
 	// Button
 	ButtonIconPrimaryColors components.ButtonColors
@@ -69,7 +71,6 @@ type Theme struct {
 	ListScrollBarBgColor color.NRGBA
 	ListItemTagBgColor   color.NRGBA
 	ListItemTagTextColor color.NRGBA
-	//ListItemsColors      components.ListItemsColors
 
 	// Switch
 	SwitchColors SwitchColors
@@ -77,8 +78,6 @@ type Theme struct {
 	// Images
 	ArrowDownArcImage paint.ImageOp
 	ArrowUpArcImage   paint.ImageOp
-	CoinbaseImage     paint.ImageOp
-	TokenImage        paint.ImageOp
 	ManageFilesImage  paint.ImageOp
 }
 

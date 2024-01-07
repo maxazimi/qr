@@ -10,28 +10,26 @@ var Dark = &Theme{
 	Name:           "Dark",
 	IndicatorColor: color.NRGBA{A: 255},
 
-	TextColor:            whiteColor,
+	TextColor:            WhiteColor,
 	TextMuteColor:        color.NRGBA{R: 255, G: 255, B: 255, A: 50},
 	DividerColor:         color.NRGBA{R: 255, G: 255, B: 255, A: 25},
-	BgColor:              blackColor,
+	BgColor:              BlackColor,
 	BgGradientStartColor: color.NRGBA{R: 30, G: 30, B: 30, A: 255},
 	BgGradientEndColor:   color.NRGBA{R: 15, G: 15, B: 15, A: 255},
 	HideBalanceBgColor:   color.NRGBA{A: 255},
 
 	HeaderBackButtonColors: components.ButtonColors{
 		TextColor:      color.NRGBA{R: 255, G: 255, B: 255, A: 100},
-		HoverTextColor: &whiteColor,
+		HoverTextColor: &WhiteColor,
 	},
 	HeaderTopBgColor: color.NRGBA{R: 30, G: 30, B: 30, A: 255},
 
-	BottomBarBgColor:         blackColor,
-	BottomBarWalletBgColor:   whiteColor,
-	BottomBarWalletTextColor: blackColor,
+	BottomBarBgColor: BlackColor,
 	BottomButtonColors: components.ButtonColors{
 		TextColor:      color.NRGBA{R: 255, G: 255, B: 255, A: 100},
-		HoverTextColor: &whiteColor,
+		HoverTextColor: &WhiteColor,
 	},
-	BottomButtonSelectedColor: whiteColor,
+	BottomButtonSelectedColor: WhiteColor,
 
 	NodeStatusBgColor:        color.NRGBA{A: 255},
 	NodeStatusTextColor:      color.NRGBA{R: 255, G: 255, B: 255, A: 255},
@@ -39,57 +37,64 @@ var Dark = &Theme{
 	NodeStatusDotYellowColor: color.NRGBA{R: 255, G: 255, B: 0, A: 255},
 	NodeStatusDotRedColor:    color.NRGBA{R: 200, G: 0, B: 0, A: 255},
 
+	InputColors: components.InputColors{
+		BackgroundColor: BlackColor,
+		TextColor:       WhiteColor,
+		BorderColor:     WhiteColor,
+		HintColor:       color.NRGBA{R: 255, G: 255, B: 255, A: 50},
+	},
+
 	ButtonIconPrimaryColors: components.ButtonColors{
-		TextColor: whiteColor,
+		TextColor: WhiteColor,
 	},
 	ButtonPrimaryColors: components.ButtonColors{
-		TextColor:       blackColor,
-		BackgroundColor: whiteColor,
+		TextColor:       BlackColor,
+		BackgroundColor: WhiteColor,
 	},
 	ButtonSecondaryColors: components.ButtonColors{
-		TextColor:   whiteColor,
-		BorderColor: whiteColor,
+		TextColor:   WhiteColor,
+		BorderColor: WhiteColor,
 	},
 	ButtonInvertColors: components.ButtonColors{
-		TextColor:       whiteColor,
-		BackgroundColor: blackColor,
+		TextColor:       WhiteColor,
+		BackgroundColor: BlackColor,
 	},
 	ButtonDangerColors: components.ButtonColors{
-		TextColor:       whiteColor,
+		TextColor:       WhiteColor,
 		BackgroundColor: color.NRGBA{R: 200, G: 0, B: 0, A: 255},
 	},
 
 	ModalColors: components.ModalColors{
-		BackgroundColor: blackColor,
+		BackgroundColor: BlackColor,
 		BackdropColor:   &color.NRGBA{R: 20, G: 20, B: 20, A: 230},
 	},
 	ModalButtonColors: components.ButtonColors{
 		TextColor:      color.NRGBA{R: 255, G: 255, B: 255, A: 100},
-		HoverTextColor: &whiteColor,
+		HoverTextColor: &WhiteColor,
 	},
 
 	NotificationSuccessColors: components.NotificationColors{
 		BackgroundColor: color.NRGBA{R: 0, G: 200, B: 0, A: 255},
-		TextColor:       whiteColor,
+		TextColor:       WhiteColor,
 	},
 	NotificationErrorColors: components.NotificationColors{
 		BackgroundColor: color.NRGBA{R: 200, G: 0, B: 0, A: 255},
-		TextColor:       whiteColor,
+		TextColor:       WhiteColor,
 	},
 	NotificationInfoColors: components.NotificationColors{
-		BackgroundColor: whiteColor,
-		TextColor:       blackColor,
+		BackgroundColor: WhiteColor,
+		TextColor:       BlackColor,
 	},
 
-	ListTextColor:        whiteColor,
+	ListTextColor:        WhiteColor,
 	ListBgColor:          color.NRGBA{R: 15, G: 15, B: 15, A: 255},
 	ListItemHoverBgColor: color.NRGBA{R: 25, G: 25, B: 25, A: 255},
-	ListScrollBarBgColor: whiteColor,
-	ListItemTagBgColor:   blackColor,
-	ListItemTagTextColor: whiteColor,
+	ListScrollBarBgColor: WhiteColor,
+	ListItemTagBgColor:   BlackColor,
+	ListItemTagTextColor: WhiteColor,
 
 	SwitchColors: SwitchColors{
-		Enabled:  whiteColor,
+		Enabled:  WhiteColor,
 		Disabled: color.NRGBA{R: 60, G: 60, B: 60, A: 255},
 		Track:    color.NRGBA{R: 60, G: 60, B: 60, A: 255},
 	},
