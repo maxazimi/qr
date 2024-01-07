@@ -1,3 +1,5 @@
+// from https://github.com/g45t345rt/g45w/blob/master/components/modal.go
+
 package components
 
 import (
@@ -9,7 +11,7 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
-	anim2 "github.com/maxazimi/v2ray-gio/ui/anim"
+	"github.com/maxazimi/v2ray-gio/ui/anim"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 	"image"
@@ -22,48 +24,48 @@ type (
 )
 
 type ModalAnimation struct {
-	animIn   *anim2.Animation
-	transIn  anim2.TransFunc
-	animOut  *anim2.Animation
-	transOut anim2.TransFunc
+	animIn   *anim.Animation
+	transIn  anim.TransFunc
+	animOut  *anim.Animation
+	transOut anim.TransFunc
 }
 
 func NewModalAnimationScaleBounce() ModalAnimation {
 	return ModalAnimation{
-		animIn: anim2.New(false, gween.NewSequence(
+		animIn: anim.New(false, gween.NewSequence(
 			gween.New(0, 1, .25, ease.OutBounce),
 		)),
-		animOut: anim2.New(false, gween.NewSequence(
+		animOut: anim.New(false, gween.NewSequence(
 			gween.New(1, 0, .25, ease.OutBounce),
 		)),
-		transIn:  anim2.TransScale,
-		transOut: anim2.TransScale,
+		transIn:  anim.TransScale,
+		transOut: anim.TransScale,
 	}
 }
 
 func NewModalAnimationUp() ModalAnimation {
 	return ModalAnimation{
-		animIn: anim2.New(false, gween.NewSequence(
+		animIn: anim.New(false, gween.NewSequence(
 			gween.New(1, 0, .25, ease.OutCubic),
 		)),
-		animOut: anim2.New(false, gween.NewSequence(
+		animOut: anim.New(false, gween.NewSequence(
 			gween.New(0, 1, .25, ease.InCubic),
 		)),
-		transIn:  anim2.TransY,
-		transOut: anim2.TransY,
+		transIn:  anim.TransY,
+		transOut: anim.TransY,
 	}
 }
 
 func NewModalAnimationDown() ModalAnimation {
 	return ModalAnimation{
-		animIn: anim2.New(false, gween.NewSequence(
+		animIn: anim.New(false, gween.NewSequence(
 			gween.New(-1, 0, .25, ease.OutCubic),
 		)),
-		animOut: anim2.New(false, gween.NewSequence(
+		animOut: anim.New(false, gween.NewSequence(
 			gween.New(0, -1, .25, ease.InCubic),
 		)),
-		transIn:  anim2.TransY,
-		transOut: anim2.TransY,
+		transIn:  anim.TransY,
+		transOut: anim.TransY,
 	}
 }
 
@@ -169,27 +171,23 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 		paint.PaintOp{}.Add(gtx.Ops)
 	}
 
-	{
-		if animIn != nil {
-			state := animIn.Update(gtx)
-			if state.Active {
-				defer transIn(gtx, state.Value).Push(gtx.Ops).Pop()
-			}
+	if animIn != nil {
+		state := animIn.Update(gtx)
+		if state.Active {
+			defer transIn(gtx, state.Value).Push(gtx.Ops).Pop()
 		}
 	}
 
-	{
-		if animOut != nil {
-			state := animOut.Update(gtx)
-			if state.Active {
-				defer transOut(gtx, state.Value).Push(gtx.Ops).Pop()
-			}
+	if animOut != nil {
+		state := animOut.Update(gtx)
+		if state.Active {
+			defer transOut(gtx, state.Value).Push(gtx.Ops).Pop()
+		}
 
-			if state.Finished {
-				m.Visible = false
-				m.closed = true
-				op.InvalidateOp{}.Add(gtx.Ops)
-			}
+		if state.Finished {
+			m.Visible = false
+			m.closed = true
+			op.InvalidateOp{}.Add(gtx.Ops)
 		}
 	}
 

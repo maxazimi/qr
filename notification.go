@@ -1,3 +1,5 @@
+// from https://github.com/g45t345rt/g45w/blob/master/components/notification.go
+
 package components
 
 import (
@@ -10,8 +12,6 @@ import (
 	"image/color"
 	"time"
 )
-
-// from https://github.com/g45t345rt/g45w/blob/master/components/notification.go
 
 type NotificationColors struct {
 	TextColor       color.NRGBA
@@ -56,9 +56,10 @@ func NewNotificationModal(style NotificationStyle) *NotificationModal {
 	}
 }
 
-func (n *NotificationModal) SetText(title, text string) {
+func (n *NotificationModal) SetText(title, text string) *NotificationModal {
 	n.title = title
 	n.text = text
+	return n
 }
 
 func (n *NotificationModal) SetVisible(w *app.Window, visible bool, closeAfter time.Duration) {
@@ -75,6 +76,10 @@ func (n *NotificationModal) SetVisible(w *app.Window, visible bool, closeAfter t
 	}
 	n.Modal.SetVisible(visible)
 	w.Invalidate()
+}
+
+func (n *NotificationModal) Closed() bool {
+	return n.Closed()
 }
 
 func (n *NotificationModal) Layout(gtx C, th *material.Theme) D {
