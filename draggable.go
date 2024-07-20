@@ -3,7 +3,6 @@
 package components
 
 import (
-	"fmt"
 	"gioui.org/f32"
 	"gioui.org/gesture"
 	"gioui.org/io/pointer"
@@ -124,7 +123,7 @@ func (l *DragItems) Layout(gtx C, scroll *layout.Position, w layout.Widget) D {
 							l.itemMoved = true
 							l.lastIndex = l.dragItem.Index
 							l.newIndex = i + itemOffset
-							fmt.Println(l.lastIndex, "->", l.newIndex)
+							//fmt.Println(l.lastIndex, "->", l.newIndex)
 						}
 
 						break

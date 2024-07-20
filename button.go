@@ -1,3 +1,5 @@
+// from https://github.com/g45t345rt/g45w/blob/master/components/button.go
+
 package components
 
 import (
@@ -10,36 +12,27 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
-	"gioui.org/widget/material"
-	anim2 "github.com/maxazimi/v2ray-gio/ui/anim"
+	"github.com/maxazimi/v2ray-gio/ui/anim"
+	"github.com/maxazimi/v2ray-gio/ui/theme"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 	"image"
-	"image/color"
 )
 
-// from https://github.com/g45t345rt/g45w/blob/master/components/button.go
-
 type ButtonAnimation struct {
-	animIn       *anim2.Animation
-	transIn      anim2.TransFunc
-	animOut      *anim2.Animation
-	transOut     anim2.TransFunc
-	animClick    *anim2.Animation
-	transClick   anim2.TransFunc
-	animLoading  *anim2.Animation
-	transLoading anim2.TransFunc
-}
-
-type ButtonColors struct {
-	TextColor            color.NRGBA
-	BackgroundColor      color.NRGBA
-	HoverBackgroundColor *color.NRGBA
-	HoverTextColor       *color.NRGBA
-	BorderColor          color.NRGBA
+	animIn       *anim.Animation
+	transIn      anim.TransFunc
+	animOut      *anim.Animation
+	transOut     anim.TransFunc
+	animClick    *anim.Animation
+	transClick   anim.TransFunc
+	animLoading  *anim.Animation
+	transLoading anim.TransFunc
 }
 
 type ButtonStyle struct {
+	Text        string
+	Colors      theme.ButtonColors
 	Radius      unit.Dp
 	TextSize    unit.Sp
 	Inset       layout.Inset
@@ -49,12 +42,10 @@ type ButtonStyle struct {
 	Animation   ButtonAnimation
 	Border      widget.Border
 	LoadingIcon *widget.Icon
-	Colors      ButtonColors
 }
 
 type Button struct {
 	ButtonStyle
-	Text             string
 	Clickable        *widget.Clickable
 	Label            *widget.Label
 	Focused          bool
@@ -70,26 +61,26 @@ func NewButtonAnimationDefault() ButtonAnimation {
 }
 
 func NewButtonAnimationScale(v float32) ButtonAnimation {
-	animIn := anim2.New(false,
+	animIn := anim.New(false,
 		gween.NewSequence(
 			gween.New(1, v, .1, ease.Linear),
 		),
 	)
 
-	animOut := anim2.New(false,
+	animOut := anim.New(false,
 		gween.NewSequence(
 			gween.New(v, 1, .1, ease.Linear),
 		),
 	)
 
-	animClick := anim2.New(false,
+	animClick := anim.New(false,
 		gween.NewSequence(
 			gween.New(1, v, .1, ease.Linear),
 			gween.New(v, 1, .4, ease.OutBounce),
 		),
 	)
 
-	animLoading := anim2.New(false,
+	animLoading := anim.New(false,
 		gween.NewSequence(
 			gween.New(0, 1, 1, ease.Linear),
 		),
@@ -98,13 +89,13 @@ func NewButtonAnimationScale(v float32) ButtonAnimation {
 
 	return ButtonAnimation{
 		animIn:       animIn,
-		transIn:      anim2.TransScale,
+		transIn:      anim.TransScale,
 		animOut:      animOut,
-		transOut:     anim2.TransScale,
+		transOut:     anim.TransScale,
 		animClick:    animClick,
-		transClick:   anim2.TransScale,
+		transClick:   anim.TransScale,
 		animLoading:  animLoading,
-		transLoading: anim2.TransRotate,
+		transLoading: anim.TransRotate,
 	}
 }
 
@@ -139,7 +130,7 @@ func (b *Button) Clicked() bool {
 	return b.Clickable.Clicked()
 }
 
-func (b *Button) Layout(gtx C, th *material.Theme) D {
+func (b *Button) Layout(gtx C) D {
 	return b.Clickable.Layout(gtx, func(gtx C) D {
 		return b.animClickable.Layout(gtx, func(gtx C) D {
 			semantic.Button.Add(gtx.Ops)
@@ -266,7 +257,7 @@ func (b *Button) Layout(gtx C, th *material.Theme) D {
 						children = append(children,
 							layout.Rigid(func(gtx C) D {
 								paint.ColorOp{Color: textColor}.Add(gtx.Ops)
-								return b.Label.Layout(gtx, th.Shaper, b.Font,
+								return b.Label.Layout(gtx, theme.Current().Theme.Shaper, b.Font,
 									b.TextSize, b.Text, op.CallOp{})
 							}),
 						)
