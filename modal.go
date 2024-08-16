@@ -1,26 +1,27 @@
-// from https://github.com/g45t345rt/g45w/blob/master/components/modal.go
+// https://github.com/g45t345rt/g45w/blob/master/components/modal.go
 
 package components
 
 import (
 	"gioui.org/io/key"
-	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"github.com/maxazimi/v2ray-gio/ui/anim"
+	"github.com/maxazimi/v2ray-gio/ui/theme"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
-	"image"
-	"image/color"
 )
 
 type (
 	C = layout.Context
 	D = layout.Dimensions
+)
+
+const (
+	defaultAnimDuration = .25
 )
 
 type ModalAnimation struct {
@@ -33,10 +34,10 @@ type ModalAnimation struct {
 func NewModalAnimationScaleBounce() ModalAnimation {
 	return ModalAnimation{
 		animIn: anim.New(false, gween.NewSequence(
-			gween.New(0, 1, .25, ease.OutBounce),
+			gween.New(0, 1, defaultAnimDuration, ease.OutBounce),
 		)),
 		animOut: anim.New(false, gween.NewSequence(
-			gween.New(1, 0, .25, ease.OutBounce),
+			gween.New(1, 0, defaultAnimDuration, ease.OutBounce),
 		)),
 		transIn:  anim.TransScale,
 		transOut: anim.TransScale,
@@ -46,10 +47,10 @@ func NewModalAnimationScaleBounce() ModalAnimation {
 func NewModalAnimationUp() ModalAnimation {
 	return ModalAnimation{
 		animIn: anim.New(false, gween.NewSequence(
-			gween.New(1, 0, .25, ease.OutCubic),
+			gween.New(1, 0, defaultAnimDuration, ease.OutCubic),
 		)),
 		animOut: anim.New(false, gween.NewSequence(
-			gween.New(0, 1, .25, ease.InCubic),
+			gween.New(0, 1, defaultAnimDuration, ease.InCubic),
 		)),
 		transIn:  anim.TransY,
 		transOut: anim.TransY,
@@ -59,28 +60,49 @@ func NewModalAnimationUp() ModalAnimation {
 func NewModalAnimationDown() ModalAnimation {
 	return ModalAnimation{
 		animIn: anim.New(false, gween.NewSequence(
-			gween.New(-1, 0, .25, ease.OutCubic),
+			gween.New(-1, 0, defaultAnimDuration, ease.OutCubic),
 		)),
 		animOut: anim.New(false, gween.NewSequence(
-			gween.New(0, -1, .25, ease.InCubic),
+			gween.New(0, -1, defaultAnimDuration, ease.InCubic),
 		)),
 		transIn:  anim.TransY,
 		transOut: anim.TransY,
 	}
 }
 
-type ModalColors struct {
-	BackgroundColor color.NRGBA
-	BackdropColor   *color.NRGBA
+func NewModalAnimationRight() ModalAnimation {
+	return ModalAnimation{
+		animIn: anim.New(false, gween.NewSequence(
+			gween.New(-1, 0, defaultAnimDuration, ease.OutCubic),
+		)),
+		animOut: anim.New(false, gween.NewSequence(
+			gween.New(0, -1, defaultAnimDuration, ease.InCubic),
+		)),
+		transIn:  anim.TransX,
+		transOut: anim.TransX,
+	}
+}
+
+func NewModalAnimationLeftDown() ModalAnimation {
+	return ModalAnimation{
+		animIn: anim.New(false, gween.NewSequence(
+			gween.New(-1, 0, defaultAnimDuration, ease.OutCubic),
+		)),
+		animOut: anim.New(false, gween.NewSequence(
+			gween.New(0, -1, defaultAnimDuration, ease.InCubic),
+		)),
+		transIn:  anim.TransXY,
+		transOut: anim.TransXY,
+	}
 }
 
 type ModalStyle struct {
-	ModalColors
-	CloseOnInsideClick bool
-	Direction          layout.Direction
-	Inset              layout.Inset
-	Radius             unit.Dp
-	Animation          ModalAnimation
+	theme.ModalColors
+	Direction  layout.Direction
+	OuterInset layout.Inset
+	InnerInset layout.Inset
+	Radius     unit.Dp
+	Animation  ModalAnimation
 }
 
 type Modal struct {
@@ -92,14 +114,23 @@ type Modal struct {
 	closed       bool
 }
 
-func NewModal(style ModalStyle) *Modal {
-	return &Modal{
+func NewModal(direction layout.Direction, outerInset, innerInset layout.Inset, radius unit.Dp,
+	animation ModalAnimation) *Modal {
+	modal := &Modal{
 		CloseKeySet:  key.NameEscape + "|" + key.NameBack,
-		ModalStyle:   style,
 		Visible:      false,
 		clickableOut: new(widget.Clickable),
 		clickableIn:  new(widget.Clickable),
 	}
+
+	modal.Direction = direction
+	modal.OuterInset = outerInset
+	modal.InnerInset = innerInset
+	modal.Radius = radius
+	modal.ModalColors = theme.Current().ModalColors
+	modal.Animation = animation
+
+	return modal
 }
 
 func (m *Modal) SetVisible(visible bool) {
@@ -111,6 +142,10 @@ func (m *Modal) SetVisible(visible bool) {
 		m.Animation.animOut.Start()
 		m.Animation.animIn.Reset()
 	}
+}
+
+func (m *Modal) IsVisible() bool {
+	return m.Visible
 }
 
 func (m *Modal) Closed() bool {
@@ -141,6 +176,7 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 		return D{Size: gtx.Constraints.Max}
 	}
 
+	m.ModalColors = theme.Current().ModalColors
 	m.handleKeyClose(gtx)
 
 	animIn := m.Animation.animIn
@@ -148,21 +184,8 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 	transIn := m.Animation.transIn
 	transOut := m.Animation.transOut
 
-	clickedOut := m.clickableOut.Clicked()
-	clickedIn := m.clickableIn.Clicked()
-
-	if !m.CloseOnInsideClick {
-		if clickedOut && !clickedIn {
-			animOut.Start()
-		}
-	} else {
-		if clickedIn {
-			animOut.Start()
-		}
-
-		if m.clickableIn.Hovered() {
-			pointer.CursorPointer.Add(gtx.Ops)
-		}
+	if m.clickableOut.Clicked() && !m.clickableIn.Clicked() {
+		animOut.Start()
 	}
 
 	if m.BackdropColor != nil {
@@ -171,43 +194,34 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 		paint.PaintOp{}.Add(gtx.Ops)
 	}
 
-	if animIn != nil {
-		state := animIn.Update(gtx)
-		if state.Active {
-			defer transIn(gtx, state.Value).Push(gtx.Ops).Pop()
+	if animIn != nil && animIn.IsActive() {
+		value, finished := animIn.Update(gtx)
+		if !finished {
+			defer transIn(gtx, value).Push(gtx.Ops).Pop()
 		}
 	}
 
-	if animOut != nil {
-		state := animOut.Update(gtx)
-		if state.Active {
-			defer transOut(gtx, state.Value).Push(gtx.Ops).Pop()
-		}
-
-		if state.Finished {
+	if animOut != nil && animOut.IsActive() {
+		value, finished := animOut.Update(gtx)
+		if finished {
 			m.Visible = false
 			m.closed = true
 			op.InvalidateOp{}.Add(gtx.Ops)
+			return D{Size: gtx.Constraints.Max}
 		}
+		defer transOut(gtx, value).Push(gtx.Ops).Pop()
 	}
 
 	r := op.Record(gtx.Ops)
-	dims := m.Inset.Layout(gtx, func(gtx C) D {
+	dims := m.OuterInset.Layout(gtx, func(gtx C) D {
 		return m.Direction.Layout(gtx, func(gtx C) D {
 			r := op.Record(gtx.Ops)
-			dims := m.clickableIn.Layout(gtx, w)
+			dims := m.clickableIn.Layout(gtx, func(gtx C) D {
+				return m.InnerInset.Layout(gtx, w)
+			})
 			c := r.Stop()
 
-			bgColor := m.BackgroundColor
-			paint.FillShape(gtx.Ops, bgColor,
-				clip.RRect{
-					Rect: image.Rectangle{Max: dims.Size},
-					SE:   gtx.Dp(m.Radius),
-					SW:   gtx.Dp(m.Radius),
-					NW:   gtx.Dp(m.Radius),
-					NE:   gtx.Dp(m.Radius),
-				}.Op(gtx.Ops),
-			)
+			paintGradient(gtx, dims.Size, int(m.Radius), m.BackgroundColor, m.BackgroundColor2)
 
 			c.Add(gtx.Ops)
 			return dims
@@ -215,13 +229,16 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 	})
 	c := r.Stop()
 
-	if !m.CloseOnInsideClick {
-		return m.clickableOut.Layout(gtx, func(gtx C) D {
-			c.Add(gtx.Ops)
-			return dims
-		})
-	}
+	return m.clickableOut.Layout(gtx, func(gtx C) D {
+		c.Add(gtx.Ops)
+		return dims
+	})
+}
 
-	c.Add(gtx.Ops)
-	return dims
+func (m *Modal) Appear() {
+	m.SetVisible(true)
+}
+
+func (m *Modal) Disappear() {
+	m.SetVisible(false)
 }
