@@ -28,6 +28,12 @@ func TransX(gtx layout.Context, value float32) op.TransformOp {
 	return op.Affine(trans)
 }
 
+func TransXY(gtx layout.Context, value float32) op.TransformOp {
+	pt := f32.Pt(-float32(gtx.Constraints.Max.X)*value, float32(gtx.Constraints.Max.Y)*value)
+	trans := f32.Affine2D{}.Offset(pt)
+	return op.Affine(trans)
+}
+
 func TransRotate(gtx layout.Context, value float32) op.TransformOp {
 	pt := gtx.Constraints.Min.Div(2)
 	origin := f32.Pt(float32(pt.X), float32(pt.Y))

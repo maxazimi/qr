@@ -1,3 +1,5 @@
+// https://github.com/g45t345rt/g45w/blob/master/animation/animation.go
+
 package anim
 
 import (
@@ -6,14 +8,6 @@ import (
 	"github.com/tanema/gween"
 	"time"
 )
-
-// from https://github.com/g45t345rt/g45w/blob/master/animation/animation.go
-
-type State struct {
-	Value    float32
-	Active   bool
-	Finished bool
-}
 
 type Animation struct {
 	Sequence      *gween.Sequence
@@ -32,7 +26,7 @@ func New(start bool, sequence *gween.Sequence) *Animation {
 	}
 }
 
-func (a *Animation) Update(gtx layout.Context) State {
+func (a *Animation) Update(gtx layout.Context) (float32, bool) {
 	now := time.Now()
 	var dt time.Duration
 
@@ -59,11 +53,7 @@ func (a *Animation) Update(gtx layout.Context) State {
 		op.InvalidateOp{}.Add(gtx.Ops)
 	}
 
-	return State{
-		Value:    value,
-		Active:   a.active,
-		Finished: finished,
-	}
+	return value, finished
 }
 
 func (a *Animation) Start() *Animation {
@@ -72,7 +62,6 @@ func (a *Animation) Start() *Animation {
 		a.stop = false
 		a.active = true
 	}
-
 	return a
 }
 
@@ -83,7 +72,6 @@ func (a *Animation) StartWithDelay(delay time.Duration) *Animation {
 		a.stop = false
 		a.active = true
 	}
-
 	return a
 }
 
@@ -107,4 +95,8 @@ func (a *Animation) Reset() *Animation {
 	a.stop = true
 	a.Sequence.Reset()
 	return a
+}
+
+func (a *Animation) IsActive() bool {
+	return a.active
 }
