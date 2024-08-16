@@ -16,6 +16,8 @@ var Light = &Theme{
 	PrimaryColor:    rgb(0x2970ff),
 	SurfaceColor:    rgb(0xffffff),
 	DeepBlueColor:   rgb(0x091440),
+	GreenColor:      color.NRGBA{R: 0, G: 225, B: 0, A: 255},
+	RedColor:        color.NRGBA{R: 225, G: 0, B: 0, A: 255},
 
 	// text colors
 	TextColor:     rgb(0x091440),
@@ -33,7 +35,7 @@ var Light = &Theme{
 		BackgroundColor:      BlueColor1,
 		HoverBackgroundColor: nil,
 		HoverTextColor:       nil,
-		BorderColor:          GreyColor,
+		BorderColor:          WhiteColor,
 	},
 
 	InputColors: InputColors{
@@ -56,25 +58,20 @@ var Light = &Theme{
 	SwitchInactiveTextColor: GreyColor,
 
 	ModalColors: ModalColors{
-		BackgroundColor: WhiteColor,
-		BackdropColor:   &color.NRGBA{A: 100},
+		BackgroundColor:  BlueGreyLighten5,
+		BackgroundColor2: BlueGreyLighten2,
+		TextColor:        BlackColor,
+		BackdropColor:    &color.NRGBA{A: 100},
 	},
 	ModalButtonColors: ButtonColors{
 		TextColor:      color.NRGBA{A: 100},
 		HoverTextColor: &BlackColor,
 	},
 
-	NotificationSuccessColors: NotificationColors{
-		BackgroundColor: color.NRGBA{R: 0, G: 225, B: 0, A: 255},
+	AppBarColors: ButtonColors{
 		TextColor:       WhiteColor,
-	},
-	NotificationErrorColors: NotificationColors{
-		BackgroundColor: color.NRGBA{R: 225, G: 0, B: 0, A: 255},
-		TextColor:       WhiteColor,
-	},
-	NotificationInfoColors: NotificationColors{
-		BackgroundColor: WhiteColor,
-		TextColor:       BlackColor,
+		BackgroundColor: BlueGreyDarken4,
+		BorderColor:     BlueGrey,
 	},
 
 	ListTextColor:        BlackColor,

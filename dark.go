@@ -16,6 +16,8 @@ var Dark = &Theme{
 	PrimaryColor:    rgb(0x57B6FF),
 	SurfaceColor:    rgb(0x252525),
 	DeepBlueColor:   argb(0x99FFFFFF),
+	GreenColor:      color.NRGBA{R: 0, G: 200, B: 0, A: 255},
+	RedColor:        color.NRGBA{R: 200, G: 0, B: 0, A: 255},
 
 	// text colors
 	TextColor:     argb(0x99FFFFFF),
@@ -33,7 +35,7 @@ var Dark = &Theme{
 		BackgroundColor:      BlueColor1,
 		HoverBackgroundColor: nil,
 		HoverTextColor:       nil,
-		BorderColor:          GreyColor,
+		BorderColor:          WhiteColor,
 	},
 
 	InputColors: InputColors{
@@ -56,25 +58,20 @@ var Dark = &Theme{
 	SwitchInactiveTextColor: GreyColor,
 
 	ModalColors: ModalColors{
-		BackgroundColor: BlackColor,
-		BackdropColor:   &color.NRGBA{R: 20, G: 20, B: 20, A: 230},
+		BackgroundColor:  BlueGreyDarken4,
+		BackgroundColor2: BlackColor,
+		TextColor:        WhiteColor,
+		BackdropColor:    &color.NRGBA{R: 20, G: 20, B: 20, A: 230},
 	},
 	ModalButtonColors: ButtonColors{
 		TextColor:      color.NRGBA{R: 255, G: 255, B: 255, A: 100},
 		HoverTextColor: &WhiteColor,
 	},
 
-	NotificationSuccessColors: NotificationColors{
-		BackgroundColor: color.NRGBA{R: 0, G: 200, B: 0, A: 255},
+	AppBarColors: ButtonColors{
 		TextColor:       WhiteColor,
-	},
-	NotificationErrorColors: NotificationColors{
-		BackgroundColor: color.NRGBA{R: 200, G: 0, B: 0, A: 255},
-		TextColor:       WhiteColor,
-	},
-	NotificationInfoColors: NotificationColors{
-		BackgroundColor: WhiteColor,
-		TextColor:       BlackColor,
+		BackgroundColor: BlueGreyDarken4,
+		BorderColor:     BlueGrey,
 	},
 
 	ListTextColor:        WhiteColor,

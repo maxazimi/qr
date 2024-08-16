@@ -18,16 +18,6 @@ type (
 )
 
 var (
-	WhiteColor     = color.NRGBA{R: 250, G: 250, B: 250, A: 255}
-	BlackColor     = color.NRGBA{R: 10, G: 10, B: 10, A: 255}
-	GreyColor      = color.NRGBA{R: 60, G: 60, B: 60, A: 255}
-	BlueColor      = color.NRGBA{R: 0, G: 0, B: 255, A: 255}
-	BlueColor1     = rgb(0x3377FF)
-	BlueGreyColor  = rgb(0x496495)
-	BlueGreyColor1 = rgb(0x3a517b)
-)
-
-var (
 	th           = material.NewTheme()
 	current      = Light
 	Themes       = []*Theme{Light, Dark}
@@ -95,18 +85,20 @@ type ButtonColors struct {
 }
 
 func (b ButtonColors) Reverse() ButtonColors {
-	temp := b.TextColor
-	b.TextColor = b.BackgroundColor
-	b.BackgroundColor = temp
+	b.TextColor, b.BackgroundColor = b.BackgroundColor, b.TextColor
+	b.BorderColor = b.TextColor
 	return b
 }
 
 type ModalColors struct {
-	BackgroundColor color.NRGBA
-	BackdropColor   *color.NRGBA
+	BackgroundColor  color.NRGBA
+	BackgroundColor2 color.NRGBA
+	TextColor        color.NRGBA
+	BackdropColor    *color.NRGBA
 }
 
 type NotificationColors struct {
+	TitleColor      color.NRGBA
 	TextColor       color.NRGBA
 	BackgroundColor color.NRGBA
 }
@@ -123,6 +115,8 @@ type Theme struct {
 	PrimaryColor    color.NRGBA
 	SurfaceColor    color.NRGBA
 	DeepBlueColor   color.NRGBA
+	GreenColor      color.NRGBA
+	RedColor        color.NRGBA
 
 	// text colors
 	TextColor     color.NRGBA
@@ -160,10 +154,8 @@ type Theme struct {
 	ModalColors       ModalColors
 	ModalButtonColors ButtonColors
 
-	// Notifications
-	NotificationSuccessColors NotificationColors
-	NotificationErrorColors   NotificationColors
-	NotificationInfoColors    NotificationColors
+	// AppBar
+	AppBarColors ButtonColors
 
 	// List
 	ListTextColor        color.NRGBA
