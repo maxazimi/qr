@@ -171,10 +171,10 @@ func (l *DragItems) Layout(gtx C, scroll *layout.Position, w layout.Widget) D {
 
 		x := float32(0)
 
-		state := l.holdStartAnimation.Update(gtx)
-		if state.Active {
+		value, finished := l.holdStartAnimation.Update(gtx)
+		if !finished {
 			origin := f32.Pt(float32(l.dragItem.Dims.Size.X/2), float32(l.dragItem.Dims.Size.Y/2))
-			x := state.Value
+			x := value
 			scale := f32.Affine2D{}.Scale(origin, f32.Pt(x, x))
 			defer op.Affine(scale).Push(gtx.Ops).Pop()
 		}
