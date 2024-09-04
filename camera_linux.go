@@ -1,3 +1,5 @@
+//go:build linux && !android && !ios
+
 package camera
 
 /*
@@ -27,7 +29,7 @@ typedef struct {
 
 typedef struct {
 	int fid;
-	webcam_device* parent;
+	webcam_device_t* parent;
 	int width;
 	int height;
 	int id;
