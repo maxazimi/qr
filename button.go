@@ -213,9 +213,9 @@ func (b *Button) Layout(gtx C) D {
 			dims := b.Border.Layout(gtx, func(gtx C) D {
 				return b.Inset.Layout(gtx, func(gtx C) D {
 					if b.Text != "" {
-						return b.textWidget(gtx)
+						return layout.Center.Layout(gtx, b.textWidget)
 					} else {
-						return b.iconWidget(gtx)
+						return layout.Center.Layout(gtx, b.iconWidget)
 					}
 				})
 			})
