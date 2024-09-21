@@ -7,9 +7,6 @@ import (
 var Light = &Theme{
 	Theme: th,
 
-	Key:  "light",
-	Name: "Light",
-
 	// generic colors
 	BackgroundColor: rgb(0xE6EAED),
 	ForegroundColor: rgb(0x091440),
@@ -51,11 +48,13 @@ var Light = &Theme{
 	CardColor:      rgb(0xffffff),
 	CardHoverColor: rgb(0xf3f5f6),
 
-	SwitchActiveColor:       rgb(0x2970ff),
-	SwitchInactiveColor:     rgb(0xc4cbd2), // InactiveGray #C4CBD2
-	SwitchThumbColor:        rgb(0xffffff),
-	SwitchActiveTextColor:   BlackColor,
-	SwitchInactiveTextColor: GreyColor,
+	SwitchColors: SwitchColors{
+		ActiveColor:       rgb(0x2970ff),
+		InactiveColor:     rgb(0xc4cbd2), // InactiveGray #C4CBD2
+		ThumbColor:        rgb(0xffffff),
+		ActiveTextColor:   BlackColor,
+		InactiveTextColor: GreyColor,
+	},
 
 	ModalColors: ModalColors{
 		BackgroundColor:  BlueGreyLighten5,
@@ -73,6 +72,14 @@ var Light = &Theme{
 		BackgroundColor: BlueGreyDarken4,
 		BorderColor:     BlueGrey,
 	},
+
+	BottomBarBgColor: WhiteColor,
+	BottomButtonColors: ButtonColors{
+		TextColor:      color.NRGBA{A: 100},
+		HoverTextColor: &BlackColor,
+	},
+	BottomButtonSelectedColor: BlackColor,
+	BottomShadowColor:         BlackColor,
 
 	ListTextColor:        BlackColor,
 	ListBgColor:          WhiteColor,
