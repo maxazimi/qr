@@ -10,6 +10,7 @@ import (
 	"github.com/maxazimi/v2ray-gio/assets"
 	"image"
 	"image/color"
+	"strings"
 )
 
 type (
@@ -17,10 +18,15 @@ type (
 	D = layout.Dimensions
 )
 
+const (
+	LIGHT = iota
+	DARK
+)
+
 var (
 	th           = material.NewTheme()
-	current      = Light
 	Themes       = []*Theme{Light, Dark}
+	current      = LIGHT
 	BackdropInst = &Backdrop{}
 )
 
@@ -31,32 +37,25 @@ func init() {
 }
 
 func Current() *Theme {
-	return current
+	return Themes[current]
 }
 
 func SetCurrent(key string) {
-	th := Get(key)
-	if th != nil {
-		current = th
-		current.Theme.Palette.Bg = current.BackgroundColor
-		current.Theme.Palette.Fg = current.ForegroundColor
+	switch strings.ToLower(key) {
+	case "light":
+		current = LIGHT
+	case "dark":
+		current = DARK
 	}
-}
 
-func Get(key string) *Theme {
-	for _, theme := range Themes {
-		if theme.Key == key {
-			return theme
-		}
+	if Themes[current] != nil {
+		Themes[current].Theme.Palette.Bg = Themes[current].BackgroundColor
+		Themes[current].Theme.Palette.Fg = Themes[current].ForegroundColor
 	}
-	return nil
 }
 
 func IsDarkModeOn() bool {
-	if current == Dark {
-		return true
-	}
-	return false
+	return current == DARK
 }
 
 type Backdrop struct {
@@ -65,7 +64,7 @@ type Backdrop struct {
 
 func (b *Backdrop) Layout(gtx C) D {
 	return b.Clickable.Layout(gtx, func(gtx C) D {
-		return Fill(gtx, current.BackgroundColor)
+		return Fill(gtx, Themes[current].BackgroundColor)
 	})
 }
 
@@ -103,11 +102,16 @@ type NotificationColors struct {
 	BackgroundColor color.NRGBA
 }
 
+type SwitchColors struct {
+	ActiveColor       color.NRGBA
+	InactiveColor     color.NRGBA
+	ThumbColor        color.NRGBA
+	ActiveTextColor   color.NRGBA
+	InactiveTextColor color.NRGBA
+}
+
 type Theme struct {
 	*material.Theme
-
-	Key  string
-	Name string
 
 	// generic colors
 	BackgroundColor color.NRGBA
@@ -144,11 +148,7 @@ type Theme struct {
 	CardHoverColor color.NRGBA
 
 	// Switch
-	SwitchActiveColor       color.NRGBA
-	SwitchInactiveColor     color.NRGBA
-	SwitchThumbColor        color.NRGBA
-	SwitchActiveTextColor   color.NRGBA
-	SwitchInactiveTextColor color.NRGBA
+	SwitchColors SwitchColors
 
 	// Modal
 	ModalColors       ModalColors
@@ -156,6 +156,12 @@ type Theme struct {
 
 	// AppBar
 	AppBarColors ButtonColors
+
+	// Bottom Bar
+	BottomBarBgColor          color.NRGBA
+	BottomButtonColors        ButtonColors
+	BottomButtonSelectedColor color.NRGBA
+	BottomShadowColor         color.NRGBA
 
 	// List
 	ListTextColor        color.NRGBA
