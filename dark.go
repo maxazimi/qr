@@ -7,9 +7,6 @@ import (
 var Dark = &Theme{
 	Theme: th,
 
-	Key:  "dark",
-	Name: "Dark",
-
 	// generic colors
 	BackgroundColor: color.NRGBA{R: 20, G: 20, B: 20, A: 255},
 	ForegroundColor: argb(0x99FFFFFF),
@@ -51,11 +48,13 @@ var Dark = &Theme{
 	CardColor:      rgb(0x252525),
 	CardHoverColor: rgb(0x121212),
 
-	SwitchActiveColor:       rgb(0x57B6FF),
-	SwitchInactiveColor:     rgb(0x8997a5),
-	SwitchThumbColor:        rgb(0xffffff),
-	SwitchActiveTextColor:   WhiteColor,
-	SwitchInactiveTextColor: GreyColor,
+	SwitchColors: SwitchColors{
+		ActiveColor:       rgb(0x57B6FF),
+		InactiveColor:     rgb(0x8997a5),
+		ThumbColor:        rgb(0xffffff),
+		ActiveTextColor:   WhiteColor,
+		InactiveTextColor: GreyColor,
+	},
 
 	ModalColors: ModalColors{
 		BackgroundColor:  BlueGreyDarken4,
@@ -73,6 +72,14 @@ var Dark = &Theme{
 		BackgroundColor: BlueGreyDarken4,
 		BorderColor:     BlueGrey,
 	},
+
+	BottomBarBgColor: BlackColor,
+	BottomButtonColors: ButtonColors{
+		TextColor:      color.NRGBA{R: 255, G: 255, B: 255, A: 100},
+		HoverTextColor: &WhiteColor,
+	},
+	BottomButtonSelectedColor: WhiteColor,
+	BottomShadowColor:         BlackColor,
 
 	ListTextColor:        WhiteColor,
 	ListBgColor:          color.NRGBA{R: 15, G: 15, B: 15, A: 255},
