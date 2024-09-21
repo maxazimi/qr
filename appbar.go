@@ -153,7 +153,7 @@ type AppBarMenu struct {
 	flexChild []layout.FlexChild
 }
 
-func NewMoreMenu(items ...MenuItem) *AppBarMenu {
+func NewAppBarMenu(items ...MenuItem) *AppBarMenu {
 	m := &AppBarMenu{Modal: NewModal(layout.SW, layout.UniformInset(0), layout.UniformInset(0), 5,
 		NewModalAnimationLeftDown())}
 
@@ -175,8 +175,7 @@ func NewMoreMenu(items ...MenuItem) *AppBarMenu {
 }
 
 func (m *AppBarMenu) Layout(gtx C) D {
-	gtx.Constraints.Min.X = 0
-	gtx.Constraints.Min.Y = 0
+	gtx.Constraints.Min = image.Pt(0, 0)
 
 	var children []layout.FlexChild
 	children = toFlex(children, m.buttons...)
