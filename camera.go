@@ -1,8 +1,78 @@
 package camera
 
+import "C"
 import (
+	"fmt"
 	"image"
 )
+
+var (
+	frameBufferChan chan *image.RGBA
+	opened          = false
+	stopped         = true
+)
+
+func Open(id, width, height int) error {
+	if opened {
+		return fmt.Errorf("camera already opened")
+	}
+
+	if err := openCamera(id, width, height); err != nil {
+		return err
+	}
+
+	frameBufferChan = make(chan *image.RGBA, 10)
+	opened = true
+	return nil
+}
+
+func StartPreview() error {
+	if !opened {
+		return fmt.Errorf("camera not initialized")
+	}
+	if !stopped {
+		return fmt.Errorf("camera already running")
+	}
+
+	if err := startCamera(); err != nil {
+		return err
+	}
+
+	stopped = false
+	return nil
+}
+
+func StopPreview() error {
+	if !opened {
+		return fmt.Errorf("camera not initialized")
+	}
+	if stopped {
+		return fmt.Errorf("camera already stopped")
+	}
+
+	if err := stopCamera(); err != nil {
+		return err
+	}
+
+	stopped = true
+	return nil
+}
+
+func Close() {
+	if !opened {
+		return
+	}
+	if !stopped {
+		_ = StopPreview()
+	}
+
+	opened = false
+	closeCamera()
+}
+
+func GetCameraFrameChan() <-chan *image.RGBA {
+	return frameBufferChan
+}
 
 func convertBGRAToRGBA(rgbBuffer []byte, width, height int) *image.RGBA {
 	rgbaImage := image.NewRGBA(image.Rect(0, 0, width, height))

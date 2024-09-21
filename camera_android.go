@@ -336,8 +336,7 @@ import (
 )
 
 var (
-	frameBufferChan = make(chan *image.RGBA, 1)
-	temp            = image.NewRGBA(image.Rect(0, 0, 640, 480))
+	temp = image.NewRGBA(image.Rect(0, 0, 640, 480))
 )
 
 //export onImageAvailableGo
@@ -391,34 +390,28 @@ func rotateImage90(buf []byte, width, height int) *image.RGBA {
 	return rotated
 }
 
-func OpenCamera(cameraId, width, height int) error {
+func openCamera(cameraId, width, height int) error {
 	jgo.RequestPermission("android.permission.CAMERA")
-	frameBufferChan = make(chan *image.RGBA, 10)
-
 	if C.openCamera(C.int(cameraId), C.int(width), C.int(height)) != 0 {
 		return fmt.Errorf("failed to initialize camera")
 	}
 	return nil
 }
 
-func StartCamera() error {
+func startCamera() error {
 	if C.startPreview() != 0 {
 		return fmt.Errorf("failed to start camera")
 	}
 	return nil
 }
 
-func StopCamera() error {
+func stopCamera() error {
 	if C.stopPreview() != 0 {
 		return fmt.Errorf("failed to stop camera")
 	}
 	return nil
 }
 
-func CloseCamera() {
+func closeCamera() {
 	C.closeCamera()
-}
-
-func GetCameraFrameChan() <-chan *image.RGBA {
-	return frameBufferChan
 }

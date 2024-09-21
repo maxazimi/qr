@@ -106,12 +106,7 @@ static void webcam_delete() {
 import "C"
 import (
 	"fmt"
-	"image"
 	"unsafe"
-)
-
-var (
-	frameBufferChan = make(chan *image.RGBA, 1)
 )
 
 //export onFrameAvailableGo
@@ -131,33 +126,27 @@ func onFrameAvailableGo(data unsafe.Pointer, w, h C.int) {
 	}()
 }
 
-func OpenCamera(id, width, height int) error {
-	frameBufferChan = make(chan *image.RGBA, 10)
-
+func openCamera(id, width, height int) error {
 	if C.webcam_open(C.int(id), C.int(width), C.int(height), 30) != 0 {
 		return fmt.Errorf("failed to initialize camera")
 	}
 	return nil
 }
 
-func StartCamera() error {
+func startCamera() error {
 	if C.webcam_start() != 0 {
 		return fmt.Errorf("failed to start camera")
 	}
 	return nil
 }
 
-func StopCamera() error {
+func stopCamera() error {
 	if C.webcam_stop() != 0 {
 		return fmt.Errorf("failed to stop camera")
 	}
 	return nil
 }
 
-func CloseCamera() {
+func closeCamera() {
 	C.webcam_delete()
-}
-
-func GetCameraFrameChan() <-chan *image.RGBA {
-	return frameBufferChan
 }
