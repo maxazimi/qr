@@ -1,6 +1,9 @@
 package theme
 
 import (
+	"gioui.org/op/paint"
+	"gioui.org/widget"
+	"github.com/maxazimi/v2ray-gio/assets"
 	"image/color"
 )
 
@@ -20,12 +23,12 @@ var Dark = &Theme{
 	TextColor:     argb(0x99FFFFFF),
 	TextMuteColor: color.NRGBA{R: 255, G: 255, B: 255, A: 50},
 
-	IndicatorColor:       color.NRGBA{A: 255},
-	DividerColor:         color.NRGBA{R: 255, G: 255, B: 255, A: 25},
-	BgColor:              BlackColor,
-	BgGradientStartColor: color.NRGBA{R: 30, G: 30, B: 30, A: 255},
-	BgGradientEndColor:   color.NRGBA{R: 15, G: 15, B: 15, A: 255},
-	HideBalanceBgColor:   color.NRGBA{A: 255},
+	//IndicatorColor:       color.NRGBA{A: 255},
+	//DividerColor:         color.NRGBA{R: 255, G: 255, B: 255, A: 25},
+	//BgColor:              BlackColor,
+	//BgGradientStartColor: color.NRGBA{R: 30, G: 30, B: 30, A: 255},
+	//BgGradientEndColor:   color.NRGBA{R: 15, G: 15, B: 15, A: 255},
+	//HideBalanceBgColor:   color.NRGBA{A: 255},
 
 	ButtonColors: ButtonColors{
 		TextColor:            WhiteColor,
@@ -87,4 +90,26 @@ var Dark = &Theme{
 	ListScrollBarBgColor: WhiteColor,
 	ListItemTagBgColor:   BlackColor,
 	ListItemTagTextColor: WhiteColor,
+
+	// Images
+	Images: nil,
+}
+
+func loadDarkModeImages() {
+	Dark.Images = make([]*widget.Image, ImageEnd)
+	for i, img := range images {
+		Dark.Images[i] = img
+	}
+
+	Dark.Images[ImageSettings] = &widget.Image{Src: paint.NewImageOp(assets.AppIcons["ic_settings_white"]), Scale: ImageScale}
+	Dark.Images[ImageHistory] = &widget.Image{Src: paint.NewImageOp(assets.AppIcons["ic_history_white"]), Scale: ImageScale}
+	Dark.Images[ImageHome] = &widget.Image{Src: paint.NewImageOp(assets.AppIcons["ic_home_white"]), Scale: ImageScale}
+	Dark.Images[ImageInfo] = &widget.Image{Src: paint.NewImageOp(assets.AppIcons["ic_info_circle_white"]), Scale: ImageScale}
+	Dark.Images[ImageClose] = &widget.Image{Src: paint.NewImageOp(assets.AppIcons["ic_close_round_white"]), Scale: ImageScale}
+
+	Dark.Images[ImageAddItem] = &widget.Image{Src: paint.NewImageOp(assets.AppIcons["ic_new_item_white"]), Scale: ImageScale}
+	Dark.Images[ImageImportItem] = &widget.Image{Src: paint.NewImageOp(assets.AppIcons["ic_import_item_white"]), Scale: ImageScale}
+	Dark.Images[ImageScanQR] = &widget.Image{Src: paint.NewImageOp(assets.AppIcons["ic_qrcode_scan_white"]), Scale: ImageScale}
+	Dark.Images[ImageAscendingFilter] = &widget.Image{Src: paint.NewImageOp(assets.AppIcons["ic_ascending_filter_white"]), Scale: ImageScale}
+	Dark.Images[ImageDescendingFilter] = &widget.Image{Src: paint.NewImageOp(assets.AppIcons["ic_descending_filter_white"]), Scale: ImageScale}
 }

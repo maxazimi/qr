@@ -8,7 +8,7 @@ var Light = &Theme{
 	Theme: th,
 
 	// generic colors
-	BackgroundColor: rgb(0xE6EAED),
+	BackgroundColor: LightGray9,
 	ForegroundColor: rgb(0x091440),
 	PrimaryColor:    rgb(0x2970ff),
 	SurfaceColor:    rgb(0xffffff),
@@ -20,12 +20,12 @@ var Light = &Theme{
 	TextColor:     rgb(0x091440),
 	TextMuteColor: color.NRGBA{A: 200},
 
-	IndicatorColor:       color.NRGBA{R: 255, G: 255, B: 255, A: 50},
-	DividerColor:         color.NRGBA{A: 50},
-	BgColor:              WhiteColor,
-	BgGradientStartColor: color.NRGBA{R: 250, G: 250, B: 250, A: 255},
-	BgGradientEndColor:   color.NRGBA{R: 210, G: 210, B: 210, A: 255},
-	HideBalanceBgColor:   color.NRGBA{R: 200, G: 200, B: 200, A: 255},
+	//IndicatorColor:       color.NRGBA{R: 255, G: 255, B: 255, A: 50},
+	//DividerColor:         color.NRGBA{A: 50},
+	//BgColor:              WhiteColor,
+	//BgGradientStartColor: color.NRGBA{R: 250, G: 250, B: 250, A: 255},
+	//BgGradientEndColor:   color.NRGBA{R: 210, G: 210, B: 210, A: 255},
+	//HideBalanceBgColor:   color.NRGBA{R: 200, G: 200, B: 200, A: 255},
 
 	ButtonColors: ButtonColors{
 		TextColor:            WhiteColor,
@@ -73,6 +73,7 @@ var Light = &Theme{
 		BorderColor:     BlueGrey,
 	},
 
+	// BottomBar
 	BottomBarBgColor: WhiteColor,
 	BottomButtonColors: ButtonColors{
 		TextColor:      color.NRGBA{A: 100},
@@ -87,4 +88,7 @@ var Light = &Theme{
 	ListScrollBarBgColor: BlackColor,
 	ListItemTagBgColor:   color.NRGBA{R: 225, G: 225, B: 225, A: 255},
 	ListItemTagTextColor: BlackColor,
+
+	// Images
+	Images: images,
 }

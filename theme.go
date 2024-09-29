@@ -126,12 +126,12 @@ type Theme struct {
 	TextColor     color.NRGBA
 	TextMuteColor color.NRGBA
 
-	IndicatorColor       color.NRGBA
-	DividerColor         color.NRGBA
-	BgColor              color.NRGBA
-	BgGradientStartColor color.NRGBA
-	BgGradientEndColor   color.NRGBA
-	HideBalanceBgColor   color.NRGBA
+	//IndicatorColor       color.NRGBA
+	//DividerColor         color.NRGBA
+	//BgColor              color.NRGBA
+	//BgGradientStartColor color.NRGBA
+	//BgGradientEndColor   color.NRGBA
+	//HideBalanceBgColor   color.NRGBA
 
 	// Button
 	ButtonColors ButtonColors
@@ -172,9 +172,7 @@ type Theme struct {
 	ListItemTagTextColor color.NRGBA
 
 	// Images
-	ArrowDownArcImage paint.ImageOp
-	ArrowUpArcImage   paint.ImageOp
-	ManageFilesImage  paint.ImageOp
+	Images []*widget.Image
 }
 
 func Fill(gtx C, col color.NRGBA) D {
