@@ -98,21 +98,23 @@ func (b *ButtonAnimation) Layout(gtx C, w layout.Widget) D {
 
 type ButtonStyle struct {
 	Tag         interface{}
-	Animation   *ButtonAnimation
 	Text        string
 	Colors      theme.ButtonColors
 	Radius      unit.Dp
 	TextSize    unit.Sp
 	Inset       layout.Inset
 	Font        font.Font
-	Icon        *widget.Icon
-	LoadingIcon *widget.Icon
-	Img         *widget.Image
 	IconGap     unit.Dp
 	Border      widget.Border
+	Icon        *widget.Icon
+	LoadingIcon *widget.Icon
+	ImgIndex    int
+	img         *widget.Image
+	Animation   *ButtonAnimation
 }
 
 type Button struct {
+	*theme.Theme
 	ButtonStyle
 	Clickable        *widget.Clickable
 	Label            *widget.Label
@@ -129,6 +131,7 @@ func NewButton(style ButtonStyle) *Button {
 	}
 
 	return &Button{
+		Theme:            theme.Current(),
 		ButtonStyle:      style,
 		Clickable:        new(widget.Clickable),
 		Label:            new(widget.Label),
@@ -203,7 +206,16 @@ func (b *Button) handleEvents(gtx C) {
 	}
 }
 
+var emptyColors = theme.ButtonColors{}
+
 func (b *Button) Layout(gtx C) D {
+	b.Theme = theme.Current()
+	b.img = b.Theme.Images[b.ImgIndex]
+
+	if b.img == nil && b.Colors == emptyColors {
+		b.Colors = b.Theme.ButtonColors
+	}
+
 	return b.Clickable.Layout(gtx, func(gtx C) D {
 		return b.Animation.Layout(gtx, func(gtx C) D {
 			b.handleEvents(gtx)
@@ -243,7 +255,7 @@ func (b *Button) Layout(gtx C) D {
 }
 
 func (b *Button) iconWidget(gtx C) D {
-	if b.Icon == nil && b.Img == nil {
+	if b.Icon == nil && b.img == nil {
 		return D{}
 	}
 
@@ -260,7 +272,11 @@ func (b *Button) iconWidget(gtx C) D {
 			}
 			return icon.Layout(gtx, c)
 		}
-		return b.Img.Layout(gtx)
+
+		if b.Focused {
+			return widget.Image{Src: b.img.Src, Scale: b.img.Scale * 1.6}.Layout(gtx)
+		}
+		return b.img.Layout(gtx)
 	}
 
 	r := op.Record(gtx.Ops)
