@@ -65,8 +65,8 @@ func (b *ButtonAnimation) Hovered() bool {
 	return b.clickable.Hovered()
 }
 
-func (b *ButtonAnimation) Clicked() bool {
-	return b.clickable.Clicked()
+func (b *ButtonAnimation) Clicked(gtx C) bool {
+	return b.clickable.Clicked(gtx)
 }
 
 func (b *ButtonAnimation) Layout(gtx C, w layout.Widget) D {
@@ -152,11 +152,11 @@ func (b *Button) SetLoading(loading bool) {
 	}
 }
 
-func (b *Button) Clicked() bool {
+func (b *Button) Clicked(gtx C) bool {
 	if b.Disabled {
 		return false
 	}
-	return b.Clickable.Clicked()
+	return b.Clickable.Clicked(gtx)
 }
 
 func (b *Button) handleEvents(gtx C) {
@@ -199,7 +199,7 @@ func (b *Button) handleEvents(gtx C) {
 		}
 	}
 
-	if b.Animation.Clicked() {
+	if b.Animation.Clicked(gtx) {
 		if b.Animation.animClick != nil {
 			b.Animation.animClick.Reset().Start()
 		}

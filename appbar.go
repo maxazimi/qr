@@ -93,19 +93,19 @@ func (a *AppBar) SetActions(actions AppBarAction) {
 	}
 }
 
-func (a *AppBar) Events() []AppBarEvent {
+func (a *AppBar) Events(gtx C) []AppBarEvent {
 	var events []AppBarEvent
 
-	if a.activeNavButton.Clicked() {
+	if a.activeNavButton.Clicked(gtx) {
 		events = append(events, AppBarNavigationClicked{})
 	}
 
 	if a.AppBarMenu != nil {
-		if a.moreButton.Clicked() {
+		if a.moreButton.Clicked(gtx) {
 			a.AppBarMenu.Appear()
 		}
 		for _, button := range a.AppBarMenu.buttons {
-			if button.Clicked() {
+			if button.Clicked(gtx) {
 				events = append(events, AppBarMoreActionClicked{Tag: button.Tag})
 				a.AppBarMenu.Disappear()
 			}

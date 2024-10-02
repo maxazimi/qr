@@ -19,8 +19,8 @@ type NavItem struct {
 	selected bool
 }
 
-func (n *NavItem) Clicked() bool {
-	return n.button.Clicked()
+func (n *NavItem) Clicked(gtx C) bool {
+	return n.button.Clicked(gtx)
 }
 
 func (n *NavItem) Layout(gtx C) D {
@@ -153,7 +153,7 @@ func (n *NavDrawer) layoutNavList(gtx C) D {
 				return layout.Spacer{Width: 20, Height: 20}.Layout(gtx)
 			}),
 		)
-		if n.items[index].Clicked() {
+		if n.items[index].Clicked(gtx) {
 			n.changeSelected(index)
 			n.Disappear()
 		}

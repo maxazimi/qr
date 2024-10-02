@@ -3,6 +3,7 @@
 package components
 
 import (
+	"gioui.org/io/event"
 	"gioui.org/io/key"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -107,8 +108,8 @@ type ModalStyle struct {
 
 type Modal struct {
 	ModalStyle
-	Visible      bool
-	CloseKeySet  key.Set
+	Visible bool
+	//CloseKeySet  string
 	clickableOut *widget.Clickable
 	clickableIn  *widget.Clickable
 	closed       bool
@@ -117,7 +118,7 @@ type Modal struct {
 func NewModal(direction layout.Direction, outerInset, innerInset layout.Inset, radius unit.Dp,
 	animation ModalAnimation) *Modal {
 	modal := &Modal{
-		CloseKeySet:  key.NameEscape + "|" + key.NameBack,
+		//CloseKeySet:  key.NameEscape + "|" + key.NameBack,
 		Visible:      false,
 		clickableOut: new(widget.Clickable),
 		clickableIn:  new(widget.Clickable),
@@ -153,21 +154,46 @@ func (m *Modal) Closed() bool {
 }
 
 func (m *Modal) handleKeyClose(gtx C) {
-	if m.CloseKeySet != "" {
-		key.InputOp{
-			Tag:  m,
-			Keys: m.CloseKeySet,
-		}.Add(gtx.Ops)
-
-		for _, e := range gtx.Events(m) {
-			switch e := e.(type) {
-			case key.Event:
-				if e.State == key.Press {
-					m.SetVisible(false)
-				}
-			}
+	event.Op(gtx.Ops, m)
+	for {
+		ev, ok := gtx.Event(
+			key.FocusFilter{
+				Target: m,
+			},
+			key.Filter{
+				Focus: m,
+				Name:  key.NameEscape,
+			},
+			key.Filter{
+				Focus: m,
+				Name:  key.NameBack,
+			},
+		)
+		if !ok {
+			break
 		}
+		_, ok = ev.(key.Event)
+		if !ok {
+			continue
+		}
+		m.SetVisible(false)
 	}
+
+	//if m.CloseKeySet != "" {
+	//	key.InputOp{
+	//		Tag:  m,
+	//		Keys: m.CloseKeySet,
+	//	}.Add(gtx.Ops)
+	//
+	//	for _, e := range gtx.Events(m) {
+	//		switch e := e.(type) {
+	//		case key.Event:
+	//			if e.State == key.Press {
+	//				m.SetVisible(false)
+	//			}
+	//		}
+	//	}
+	//}
 }
 
 func (m *Modal) Layout(gtx C, w layout.Widget) D {
@@ -184,7 +210,7 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 	transIn := m.Animation.transIn
 	transOut := m.Animation.transOut
 
-	if m.clickableOut.Clicked() && !m.clickableIn.Clicked() {
+	if m.clickableOut.Clicked(gtx) && !m.clickableIn.Clicked(gtx) {
 		animOut.Start()
 	}
 
@@ -206,7 +232,7 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 		if finished {
 			m.Visible = false
 			m.closed = true
-			op.InvalidateOp{}.Add(gtx.Ops)
+			gtx.Execute(op.InvalidateCmd{})
 			return D{Size: gtx.Constraints.Max}
 		}
 		defer transOut(gtx, value).Push(gtx.Ops).Pop()

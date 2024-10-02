@@ -137,11 +137,11 @@ func (s *Switch) Layout(gtx C) D {
 	return D{Size: dims}
 }
 
-func (s *Switch) Changed() bool {
+func (s *Switch) Changed(gtx C) bool {
 	if s.disabled {
 		return false
 	}
-	return s.Bool.Changed()
+	return s.Bool.Update(gtx)
 }
 
 func (s *Switch) IsChecked() bool {
@@ -158,7 +158,7 @@ func (s *Switch) SetEnabled(value bool) {
 
 func (s *SwitchButtonText) Layout(gtx C) D {
 	s.Theme = theme.Current()
-	s.handleClickEvent()
+	s.handleClickEvent(gtx)
 
 	m8 := unit.Dp(8)
 	m4 := unit.Dp(4)
@@ -188,10 +188,10 @@ func (s *SwitchButtonText) Layout(gtx C) D {
 	})
 }
 
-func (s *SwitchButtonText) handleClickEvent() {
+func (s *SwitchButtonText) handleClickEvent(gtx C) {
 	for index := range s.items {
 		if index != 0 {
-			if s.items[index].button.Clicked() {
+			if s.items[index].button.Clicked(gtx) {
 				if s.selected != index {
 					s.changed = true
 				}

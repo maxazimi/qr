@@ -31,8 +31,8 @@ func NewClickable(hoverable bool) *Clickable {
 	}
 }
 
-func (cl *Clickable) Clicked() bool {
-	return cl.button.Clicked()
+func (cl *Clickable) Clicked(gtx C) bool {
+	return cl.button.Clicked(gtx)
 }
 
 func (cl *Clickable) IsHovered() bool {

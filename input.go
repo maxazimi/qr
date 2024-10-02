@@ -110,9 +110,30 @@ func (t *Input) Submitted() (bool, string) {
 
 func (t *Input) Layout(gtx C, th *material.Theme, hint string) D {
 	if t.activeSubmit {
-		for _, e := range t.Editor.Events() {
-			e, ok := e.(widget.SubmitEvent)
-			if ok {
+		//for _, e := range t.Editor.Events() {
+		//	e, ok := e.(widget.SubmitEvent)
+		//	if ok {
+		//		t.Editor.SetText("")
+		//		t.submitText = e.Text
+		//		t.submitted = true
+		//	}
+		//}
+
+		for {
+			event, ok := gtx.Event(
+				key.Filter{
+					Focus: t.Editor,
+				},
+			)
+			if !ok {
+				break
+			}
+			e, ok := event.(widget.EditorEvent)
+			if !ok {
+				continue
+			}
+
+			if e, ok := e.(widget.SubmitEvent); ok {
 				t.Editor.SetText("")
 				t.submitText = e.Text
 				t.submitted = true
@@ -130,11 +151,12 @@ func (t *Input) Layout(gtx C, th *material.Theme, hint string) D {
 
 	gtx.Constraints.Min.Y = t.EditorMinY
 
-	if t.keyboardClick.Clicked() {
+	if t.keyboardClick.Clicked(gtx) {
 		// on mobile if the keyboard popups and the input lose focus it will automatically close the keyboard
 		// so we have to manually force keyboard request to avoid this issue
 		if !t.Editor.ReadOnly {
-			key.SoftKeyboardOp{Show: true}.Add(gtx.Ops)
+			//key.SoftKeyboardOp{Show: true}.Add(gtx.Ops)
+			gtx.Execute(key.SoftKeyboardCmd{Show: true})
 		}
 	}
 

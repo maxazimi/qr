@@ -5,6 +5,7 @@ package components
 import (
 	"gioui.org/f32"
 	"gioui.org/gesture"
+	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -13,6 +14,7 @@ import (
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 	"image"
+	"log"
 	"time"
 )
 
@@ -69,9 +71,7 @@ func (l *DragItems) LayoutItem(gtx C, index int, w layout.Widget) {
 func (l *DragItems) Layout(gtx C, scroll *layout.Position, w layout.Widget) D {
 	l.items = make([]draggable, 0)
 	m := op.Record(gtx.Ops)
-	dims := l.holdPress.Layout(gtx, func(gtx C) D {
-		return w(gtx)
-	})
+	dims := l.holdPress.Layout(gtx, w)
 	c := m.Stop()
 
 	scrollOffset := 0
@@ -87,8 +87,22 @@ func (l *DragItems) Layout(gtx C, scroll *layout.Position, w layout.Widget) D {
 	}
 
 	l.itemMoved = false
-	for _, e := range l.drag.Events(gtx.Metric, gtx.Queue, gesture.Both) {
-		switch e.Type {
+	//for _, e := range l.drag.Events(gtx.Metric, gtx.Queue, gesture.Both) {
+	for {
+		event, ok := gtx.Event(
+			key.Filter{
+				Focus: &l.drag,
+			},
+		)
+		if !ok {
+			break
+		}
+		e, ok := event.(pointer.Event)
+		if !ok {
+			continue
+		}
+		log.Println("\n\n\nHkdjhfgjdhfghjfdgjg\n\n\n")
+		switch e.Kind {
 		case pointer.Drag:
 			if l.canStartDrag {
 				l.dragEvent = &e
@@ -123,7 +137,6 @@ func (l *DragItems) Layout(gtx C, scroll *layout.Position, w layout.Widget) D {
 							l.itemMoved = true
 							l.lastIndex = l.dragItem.Index
 							l.newIndex = i + itemOffset
-							//fmt.Println(l.lastIndex, "->", l.newIndex)
 						}
 
 						break
