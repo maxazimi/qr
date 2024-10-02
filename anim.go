@@ -50,7 +50,8 @@ func (a *Animation) Update(gtx layout.Context) (float32, bool) {
 	}
 
 	if !a.stop {
-		op.InvalidateOp{}.Add(gtx.Ops)
+		//op.InvalidateOp{}.Add(gtx.Ops)
+		gtx.Execute(op.InvalidateCmd{})
 	}
 
 	return value, finished
