@@ -9,6 +9,10 @@ import (
 	"time"
 )
 
+type (
+	C = layout.Context
+)
+
 type Animation struct {
 	Sequence      *gween.Sequence
 	active        bool
@@ -26,7 +30,7 @@ func New(start bool, sequence *gween.Sequence) *Animation {
 	}
 }
 
-func (a *Animation) Update(gtx layout.Context) (float32, bool) {
+func (a *Animation) Update(gtx C) (float32, bool) {
 	now := time.Now()
 	var dt time.Duration
 
@@ -45,13 +49,12 @@ func (a *Animation) Update(gtx layout.Context) (float32, bool) {
 	seconds := float32(dt.Seconds())
 	value, _, finished := a.Sequence.Update(seconds)
 
-	if finished {
-		a.stop = true
+	if !a.stop {
+		gtx.Execute(op.InvalidateCmd{})
 	}
 
-	if !a.stop {
-		//op.InvalidateOp{}.Add(gtx.Ops)
-		gtx.Execute(op.InvalidateCmd{})
+	if finished {
+		a.stop = true
 	}
 
 	return value, finished
