@@ -5,7 +5,6 @@ package components
 import (
 	"gioui.org/f32"
 	"gioui.org/gesture"
-	"gioui.org/io/key"
 	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
@@ -14,7 +13,6 @@ import (
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 	"image"
-	"log"
 	"time"
 )
 
@@ -87,21 +85,22 @@ func (l *DragItems) Layout(gtx C, scroll *layout.Position, w layout.Widget) D {
 	}
 
 	l.itemMoved = false
-	//for _, e := range l.drag.Events(gtx.Metric, gtx.Queue, gesture.Both) {
 	for {
 		event, ok := gtx.Event(
-			key.Filter{
-				Focus: &l.drag,
+			pointer.Filter{
+				Target: &l.drag,
+				Kinds:  pointer.Drag | pointer.Press | pointer.Release | pointer.Cancel,
 			},
 		)
 		if !ok {
 			break
 		}
+
 		e, ok := event.(pointer.Event)
 		if !ok {
 			continue
 		}
-		log.Println("\n\n\nHkdjhfgjdhfghjfdgjg\n\n\n")
+
 		switch e.Kind {
 		case pointer.Drag:
 			if l.canStartDrag {

@@ -2,12 +2,11 @@ package components
 
 import (
 	"gioui.org/gesture"
-	"gioui.org/io/key"
+	"gioui.org/io/pointer"
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"image"
-	"log"
 	"time"
 )
 
@@ -46,24 +45,26 @@ func (h *HoldPress) Layout(gtx C, w layout.Widget) D {
 
 	for {
 		event, ok := gtx.Event(
-			key.Filter{
-				Focus: &h.hold,
+			pointer.Filter{
+				Target: &h.hold,
+				Kinds:  pointer.Press | pointer.Release | pointer.Cancel,
 			},
 		)
 		if !ok {
 			break
 		}
-		e, ok := event.(gesture.ClickEvent)
+
+		e, ok := event.(pointer.Event)
 		if !ok {
 			continue
 		}
-		log.Println("\n\n\nHoldPressed!\n\n\n")
+
 		switch e.Kind {
-		case gesture.KindClick:
-			h.pressTime = nil
-		case gesture.KindPress:
+		case pointer.Press:
 			h.pressTime = &gtx.Now
-		case gesture.KindCancel:
+		case pointer.Release:
+			fallthrough
+		case pointer.Cancel:
 			h.pressTime = nil
 		}
 	}

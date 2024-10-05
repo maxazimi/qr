@@ -116,13 +116,13 @@ type ButtonStyle struct {
 type Button struct {
 	*theme.Theme
 	ButtonStyle
-	Clickable        *widget.Clickable
-	Label            *widget.Label
-	Focused          bool
-	Disabled         bool
-	Loading          bool
-	Flex             bool
-	hoverSwitchState bool
+	Clickable  *widget.Clickable
+	Label      *widget.Label
+	Focused    bool
+	Disabled   bool
+	Loading    bool
+	Flex       bool
+	hoverState bool
 }
 
 func NewButton(style ButtonStyle) *Button {
@@ -131,12 +131,12 @@ func NewButton(style ButtonStyle) *Button {
 	}
 
 	return &Button{
-		Theme:            theme.Current(),
-		ButtonStyle:      style,
-		Clickable:        new(widget.Clickable),
-		Label:            new(widget.Label),
-		Focused:          false,
-		hoverSwitchState: true,
+		Theme:       theme.Current(),
+		ButtonStyle: style,
+		Clickable:   new(widget.Clickable),
+		Label:       new(widget.Label),
+		Focused:     false,
+		hoverState:  true,
 	}
 }
 
@@ -156,7 +156,14 @@ func (b *Button) Clicked(gtx C) bool {
 	if b.Disabled {
 		return false
 	}
-	return b.Clickable.Clicked(gtx)
+
+	if b.Clickable.Clicked(gtx) {
+		if b.Animation.animClick != nil {
+			b.Animation.animClick.Reset().Start()
+		}
+		return true
+	}
+	return false
 }
 
 func (b *Button) handleEvents(gtx C) {
@@ -178,30 +185,24 @@ func (b *Button) handleEvents(gtx C) {
 			b.Colors.TextColor = *b.Colors.HoverTextColor
 		}
 
-		if !b.hoverSwitchState {
-			b.hoverSwitchState = true
+		if !b.hoverState {
+			b.hoverState = true
 			if b.Animation.animIn != nil {
 				b.Animation.animIn.Start()
+				gtx.Execute(op.InvalidateCmd{})
 			}
 			if b.Animation.animOut != nil {
 				b.Animation.animOut.Reset()
 			}
 		}
-	} else {
-		if b.hoverSwitchState {
-			b.hoverSwitchState = false
-			if b.Animation.animOut != nil {
-				b.Animation.animOut.Start()
-			}
-			if b.Animation.animIn != nil {
-				b.Animation.animIn.Reset()
-			}
+	} else if b.hoverState {
+		b.hoverState = false
+		if b.Animation.animOut != nil {
+			b.Animation.animOut.Start()
+			gtx.Execute(op.InvalidateCmd{})
 		}
-	}
-
-	if b.Animation.Clicked(gtx) {
-		if b.Animation.animClick != nil {
-			b.Animation.animClick.Reset().Start()
+		if b.Animation.animIn != nil {
+			b.Animation.animIn.Reset()
 		}
 	}
 }
