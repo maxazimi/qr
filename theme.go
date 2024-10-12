@@ -34,6 +34,7 @@ func init() {
 	th.Shaper = text.NewShaper(text.WithCollection(assets.FontCollection()))
 	th.Palette.ContrastFg = WhiteColor
 	th.Palette.ContrastBg = BlueGreyColor
+	SetCurrent("light")
 }
 
 func Current() *Theme {
@@ -110,20 +111,40 @@ type SwitchColors struct {
 	InactiveTextColor color.NRGBA
 }
 
+type Colors struct {
+}
+
 type Theme struct {
 	*material.Theme
 
 	// generic colors
 	BackgroundColor color.NRGBA
 	ForegroundColor color.NRGBA
-	PrimaryColor    color.NRGBA
-	SurfaceColor    color.NRGBA
-	DeepBlueColor   color.NRGBA
-	GreenColor      color.NRGBA
-	RedColor        color.NRGBA
+	//PrimaryColor    color.NRGBA
+	//SurfaceColor    color.NRGBA
+	//DeepBlueColor   color.NRGBA
+	GreenColor color.NRGBA
+	RedColor   color.NRGBA
+
+	// specific colors
+	PrimaryColor     color.NRGBA
+	PageNavTextColor color.NRGBA
+	TextColor        color.NRGBA
+	GrayText1Color   color.NRGBA
+	GrayText2Color   color.NRGBA
+	GrayText3Color   color.NRGBA
+	GrayText4Color   color.NRGBA
+	DeepBlueColor    color.NRGBA
+	Gray1Color       color.NRGBA
+	Gray2Color       color.NRGBA
+	Gray3Color       color.NRGBA
+	Gray4Color       color.NRGBA
+	Gray5Color       color.NRGBA
+	SurfaceColor     color.NRGBA
+	LightGrayColor   color.NRGBA
 
 	// text colors
-	TextColor     color.NRGBA
+	//TextColor     color.NRGBA
 	TextMuteColor color.NRGBA
 
 	//IndicatorColor       color.NRGBA
