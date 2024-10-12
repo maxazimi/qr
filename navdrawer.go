@@ -14,9 +14,10 @@ import (
 type NavItem struct {
 	Tag      interface{}
 	Name     string
+	ImgIndex int
 	Icon     *widget.Icon
 	button   *Button
-	selected bool
+	Selected bool
 }
 
 func (n *NavItem) Clicked(gtx C) bool {
@@ -58,7 +59,7 @@ func (n *NavDrawer) AddNavItem(navItem NavItem) {
 	defer func() {
 		n.items = append(n.items, navItem)
 		if len(n.items) == 1 {
-			n.items[0].selected = true
+			n.items[0].Selected = true
 		}
 	}()
 
@@ -162,17 +163,17 @@ func (n *NavDrawer) layoutNavList(gtx C) D {
 }
 
 func (n *NavDrawer) changeSelected(newIndex int) {
-	if newIndex == n.selectedItem && n.items[n.selectedItem].selected {
+	if newIndex == n.selectedItem && n.items[n.selectedItem].Selected {
 		return
 	}
-	n.items[n.selectedItem].selected = false
+	n.items[n.selectedItem].Selected = false
 	n.selectedItem = newIndex
-	n.items[n.selectedItem].selected = true
+	n.items[n.selectedItem].Selected = true
 	n.selectedChanged = true
 }
 
 func (n *NavDrawer) UnselectNavDestination() {
-	n.items[n.selectedItem].selected = false
+	n.items[n.selectedItem].Selected = false
 	n.selectedChanged = false
 }
 

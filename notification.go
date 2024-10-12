@@ -59,12 +59,12 @@ func (n *NotificationModal) SetVisible(visible bool, closeAfter time.Duration) {
 		if closeAfter > 0 {
 			n.timer = time.AfterFunc(closeAfter, func() {
 				n.Modal.SetVisible(false)
-				instance.W.Invalidate()
+				instance.Window().Invalidate()
 			})
 		}
 	}
 	n.Modal.SetVisible(visible)
-	instance.W.Invalidate()
+	instance.Window().Invalidate()
 }
 
 func (n *NotificationModal) Closed() bool {
