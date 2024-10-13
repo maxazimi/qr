@@ -183,7 +183,7 @@ func (m *Modal) handleKeyClose(gtx C) {
 	//	key.InputOp{
 	//		Tag:  m,
 	//		Keys: m.CloseKeySet,
-	//	}.Add(gtx.Ops)
+	//	}.Add(gtx.ops)
 	//
 	//	for _, e := range gtx.Events(m) {
 	//		switch e := e.(type) {
