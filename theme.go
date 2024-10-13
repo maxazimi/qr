@@ -8,6 +8,7 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/maxazimi/v2ray-gio/assets"
+	"github.com/maxazimi/v2ray-gio/config"
 	"image"
 	"image/color"
 	"strings"
@@ -34,7 +35,6 @@ func init() {
 	th.Shaper = text.NewShaper(text.WithCollection(assets.FontCollection()))
 	th.Palette.ContrastFg = WhiteColor
 	th.Palette.ContrastBg = BlueGreyColor
-	SetCurrent("light")
 }
 
 func Current() *Theme {
@@ -42,17 +42,23 @@ func Current() *Theme {
 }
 
 func SetCurrent(key string) {
-	switch strings.ToLower(key) {
+	name := strings.ToLower(key)
+	switch name {
 	case "light":
 		current = LIGHT
 	case "dark":
 		current = DARK
+	default:
+		return
 	}
 
 	if Themes[current] != nil {
 		Themes[current].Theme.Palette.Bg = Themes[current].BackgroundColor
 		Themes[current].Theme.Palette.Fg = Themes[current].ForegroundColor
 	}
+
+	config.Get().ThemeName = name
+	_ = config.Get().Save()
 }
 
 func IsDarkModeOn() bool {
@@ -116,6 +122,7 @@ type Colors struct {
 
 type Theme struct {
 	*material.Theme
+	Name string
 
 	// generic colors
 	BackgroundColor color.NRGBA

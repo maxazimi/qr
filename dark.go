@@ -9,6 +9,7 @@ import (
 
 var Dark = &Theme{
 	Theme: th,
+	Name:  "dark",
 
 	// generic colors
 	BackgroundColor: color.NRGBA{R: 20, G: 20, B: 20, A: 255},

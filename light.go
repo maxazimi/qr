@@ -6,6 +6,7 @@ import (
 
 var Light = &Theme{
 	Theme: th,
+	Name:  "light",
 
 	// generic colors
 	BackgroundColor: LightGray9,
