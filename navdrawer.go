@@ -177,17 +177,18 @@ func (n *NavDrawer) UnselectNavDestination() {
 	n.selectedChanged = false
 }
 
-func (n *NavDrawer) SetNavDestination(tag interface{}) {
-	for i, item := range n.items {
-		if item.Tag == tag {
-			n.changeSelected(i)
-			break
-		}
-	}
+func (n *NavDrawer) SetNavDestination(index int) {
+	n.changeSelected(index)
+	//for i, item := range n.items {
+	//	if item.Tag == tag {
+	//		n.changeSelected(i)
+	//		break
+	//	}
+	//}
 }
 
-func (n *NavDrawer) CurrentNavDestination() interface{} {
-	return n.items[n.selectedItem].Tag
+func (n *NavDrawer) CurrentNavDestination() int {
+	return n.selectedItem
 }
 
 func (n *NavDrawer) NavDestinationChanged() bool {

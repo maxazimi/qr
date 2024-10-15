@@ -78,6 +78,10 @@ func mulAlpha(c color.NRGBA, alpha uint8) color.NRGBA {
 	}
 }
 
+func opacity2Transparency(opacity float32) uint8 {
+	return uint8(127.0 - (127.0 * opacity)) // opacity = (127 - transparency) / 127
+}
+
 func drawInk(gtx layout.Context, c widget.Press, highlightColor color.NRGBA) {
 	// duration is the number of seconds for the
 	// completed animation: expand while fading in, then

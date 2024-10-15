@@ -45,7 +45,8 @@ const (
 )
 
 type Card struct {
-	*theme.Theme
+	CardColor      color.NRGBA
+	CardHoverColor color.NRGBA
 	layout.Inset
 	Radius CornerRadius
 }
@@ -81,6 +82,7 @@ func (c Card) Layout(gtx C, w layout.Widget) D {
 }
 
 func (c Card) HoverableLayout(gtx C, btn *Clickable, w layout.Widget) D {
+	th := theme.Current()
 	background := c.CardColor
 	dims := c.Inset.Layout(gtx, func(gtx C) D {
 		return layout.Stack{}.Layout(gtx,
@@ -98,7 +100,7 @@ func (c Card) HoverableLayout(gtx C, btn *Clickable, w layout.Widget) D {
 				}.Push(gtx.Ops).Pop()
 
 				if btn.Hoverable && btn.button.Hovered() {
-					background = c.ClickableHoverColor
+					background = th.ClickableHoverColor
 				}
 
 				return fill(gtx, background)
