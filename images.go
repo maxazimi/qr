@@ -18,8 +18,10 @@ var images = []*widget.Image{
 	{Src: paint.NewImageOp(assets.AppIcons["ic_info_circle"]), Scale: ImageScale},
 	{Src: paint.NewImageOp(assets.AppIcons["ic_close_round"]), Scale: ImageScale},
 
-	{Src: paint.NewImageOp(assets.AppIcons["ic_about"]), Scale: ImageScale},
 	{Src: paint.NewImageOp(assets.AppIcons["chevron_expand"]), Scale: ImageScale},
+	{Src: paint.NewImageOp(assets.AppIcons["chevron_left"]), Scale: ImageScale},
+	{Src: paint.NewImageOp(assets.AppIcons["chevron_coll"]), Scale: ImageScale},
+	{Src: paint.NewImageOp(assets.AppIcons["ic_about"]), Scale: ImageScale},
 	{Src: paint.NewImageOp(assets.AppIcons["ic_copy"]), Scale: ImageScale * 1.3},
 	{Src: paint.NewImageOp(assets.AppIcons["ic_delete"]), Scale: ImageScale},
 
@@ -43,8 +45,10 @@ const (
 	ImageInfo
 	ImageClose
 
-	ImageAbout
 	ImageChevronExpand
+	ImageChevronLeft
+	ImageChevronRight
+	ImageAbout
 	ImageCopy
 	ImageDelete
 
