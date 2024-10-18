@@ -14,11 +14,8 @@ var Dark = &Theme{
 	// generic colors
 	BackgroundColor: color.NRGBA{R: 20, G: 20, B: 20, A: 255},
 	ForegroundColor: argb(0x99FFFFFF),
-	//PrimaryColor:    rgb(0x57B6FF),
-	//SurfaceColor:    rgb(0x252525),
-	//DeepBlueColor:   argb(0x99FFFFFF),
-	GreenColor: color.NRGBA{R: 0, G: 200, B: 0, A: 255},
-	RedColor:   color.NRGBA{R: 200, G: 0, B: 0, A: 255},
+	GreenColor:      color.NRGBA{R: 0, G: 200, B: 0, A: 255},
+	RedColor:        color.NRGBA{R: 200, G: 0, B: 0, A: 255},
 
 	PrimaryColor:     DarkLightPrimary,
 	PageNavTextColor: DarkPageNavText,
@@ -88,9 +85,9 @@ var Dark = &Theme{
 	},
 
 	AppBarColors: ButtonColors{
-		TextColor:       WhiteColor,
-		BackgroundColor: BlueGreyDarken4,
-		BorderColor:     BlueGrey,
+		TextColor: WhiteColor,
+		//BackgroundColor: BlueGreyDarken4,
+		BorderColor: BlueGrey,
 	},
 
 	BottomBarBgColor: BlackColor,

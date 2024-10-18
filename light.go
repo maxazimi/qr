@@ -11,11 +11,8 @@ var Light = &Theme{
 	// generic colors
 	BackgroundColor: LightGray9,
 	ForegroundColor: rgb(0x091440),
-	//PrimaryColor:    rgb(0x2970ff),
-	//SurfaceColor:    rgb(0xffffff),
-	//DeepBlueColor:   rgb(0x091440),
-	GreenColor: color.NRGBA{R: 0, G: 225, B: 0, A: 255},
-	RedColor:   color.NRGBA{R: 225, G: 0, B: 0, A: 255},
+	GreenColor:      color.NRGBA{R: 0, G: 225, B: 0, A: 255},
+	RedColor:        color.NRGBA{R: 225, G: 0, B: 0, A: 255},
 
 	PrimaryColor:     LightPrimary,
 	PageNavTextColor: LightPageNavText,
@@ -85,9 +82,9 @@ var Light = &Theme{
 	},
 
 	AppBarColors: ButtonColors{
-		TextColor:       WhiteColor,
-		BackgroundColor: BlueGreyDarken4,
-		BorderColor:     BlueGrey,
+		TextColor: LightGrayText1,
+		//BackgroundColor: BlueGreyDarken4,
+		BorderColor: BlueGrey,
 	},
 
 	// BottomBar
