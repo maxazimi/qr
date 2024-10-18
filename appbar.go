@@ -7,8 +7,6 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
-	"gioui.org/widget"
-	"gioui.org/widget/material"
 	"github.com/maxazimi/v2ray-gio/ui/theme"
 	"golang.org/x/exp/shiny/materialdesign/icons"
 	"image"
@@ -42,63 +40,44 @@ type AppBarAction struct {
 
 type AppBar struct {
 	AppBarAction
-	Title           string
-	navDrawer       *NavDrawer
-	moreButton      *Button
-	backButton      *Button
-	navButton       *Button
-	activeNavButton *Button
+	Title string
+	//navDrawer       *NavDrawer
+	moreButton *Button
+	//navButton       *Button
+	//activeNavButton *Button
 }
 
 func NewAppBar(drawer *NavDrawer) *AppBar {
-	navIcon, _ := widget.NewIcon(icons.NavigationMenu)
-	moreIcon, _ := widget.NewIcon(icons.NavigationMoreVert)
-	backIcon, _ := widget.NewIcon(icons.NavigationArrowBack)
-
-	colors := theme.ButtonColors{
-		TextColor:       theme.WhiteColor,
-		BackgroundColor: color.NRGBA{},
-	}
-
-	navButton := NewButton(ButtonStyle{
-		Icon:   navIcon,
-		Colors: colors,
-		Inset:  layout.UniformInset(16),
-	})
+	//navIcon := NewIcon(icons.NavigationMenu)
+	//backIcon := NewIcon(icons.NavigationArrowBack)
+	moreIcon := NewIcon(icons.NavigationMoreVert)
+	//navButton := NewButton(ButtonStyle{
+	//	Icon:  navIcon,
+	//	Inset: layout.UniformInset(16),
+	//})
 
 	return &AppBar{
-		navDrawer: drawer,
+		//navDrawer: drawer,
 		moreButton: NewButton(ButtonStyle{
 			Icon:   moreIcon,
-			Colors: colors,
+			Colors: theme.Current().AppBarColors,
 			Inset:  layout.UniformInset(16),
 		}),
-		backButton: NewButton(ButtonStyle{
-			Icon:   backIcon,
-			Colors: colors,
-			Inset:  layout.UniformInset(16),
-		}),
-		navButton:       navButton,
-		activeNavButton: navButton,
+		//navButton:       navButton,
+		//activeNavButton: navButton,
 	}
 }
 
 func (a *AppBar) SetActions(actions AppBarAction) {
 	a.AppBarAction = actions
-
-	if actions.IsMainPage {
-		a.activeNavButton = a.navButton
-	} else {
-		a.activeNavButton = a.backButton
-	}
 }
 
 func (a *AppBar) Events(gtx C) []AppBarEvent {
 	var events []AppBarEvent
 
-	if a.activeNavButton.Clicked(gtx) {
-		events = append(events, AppBarNavigationClicked{})
-	}
+	//if a.activeNavButton.Clicked(gtx) {
+	//	events = append(events, AppBarNavigationClicked{})
+	//}
 
 	if a.AppBarMenu != nil {
 		if a.moreButton.Clicked(gtx) {
@@ -116,22 +95,23 @@ func (a *AppBar) Events(gtx C) []AppBarEvent {
 
 func (a *AppBar) Layout(gtx C) D {
 	gtx.Constraints.Max.Y = gtx.Dp(56)
-	color1 := theme.Current().AppBarColors.BackgroundColor
-	color2 := theme.Current().AppBarColors.BorderColor
-	paintGradient(gtx, gtx.Constraints.Max, 0, color1, color2)
+	a.moreButton.Colors = theme.Current().AppBarColors
+	//color1 := theme.Current().AppBarColors.BackgroundColor
+	//color2 := theme.Current().AppBarColors.BorderColor
+	//paintGradient(gtx, gtx.Constraints.Max, 0, color1, color2)
 
 	layout.Flex{Alignment: layout.Middle}.Layout(gtx,
-		layout.Rigid(func(gtx C) D {
-			return a.activeNavButton.Layout(gtx)
-		}),
-		layout.Rigid(func(gtx C) D {
-			return layout.Inset{Left: 16}.Layout(gtx, func(gtx C) D {
-				title := material.Body1(theme.Current().Theme, a.Title)
-				title.Color = theme.Current().AppBarColors.TextColor
-				title.TextSize = 18
-				return title.Layout(gtx)
-			})
-		}),
+		//layout.Rigid(func(gtx C) D {
+		//	return a.activeNavButton.Layout(gtx)
+		//}),
+		//layout.Rigid(func(gtx C) D {
+		//	return layout.Inset{Left: 16}.Layout(gtx, func(gtx C) D {
+		//		title := material.Body1(theme.Current().Theme, a.Title)
+		//		title.Color = th.AppBarColors.TextColor
+		//		title.TextSize = 18
+		//		return title.Layout(gtx)
+		//	})
+		//}),
 		layout.Flexed(1, func(gtx C) D {
 			gtx.Constraints.Min.Y = gtx.Constraints.Max.Y
 			return layout.E.Layout(gtx, func(gtx C) D {

@@ -15,7 +15,7 @@ type NavItem struct {
 	Tag      interface{}
 	Name     string
 	ImgIndex int
-	Icon     *widget.Icon
+	Icon     *Icon
 	button   *Button
 	Selected bool
 }
@@ -35,7 +35,6 @@ type NavDrawer struct {
 	navList         layout.List
 	selectedItem    int
 	selectedChanged bool
-	navigationAxis  layout.Axis
 	items           []NavItem
 }
 
@@ -51,7 +50,6 @@ func NewNavDrawer(title, subtitle string, bottombar bool) *NavDrawer {
 		Subtitle: subtitle,
 		Modal: NewModal(layout.E, layout.UniformInset(0), layout.UniformInset(10), 5,
 			NewModalAnimationRight()),
-		navigationAxis: layout.Vertical,
 	}
 }
 
@@ -63,41 +61,16 @@ func (n *NavDrawer) AddNavItem(navItem NavItem) {
 		}
 	}()
 
-	if n.navigationAxis == layout.Horizontal {
-		colors := theme.Current().AppBarColors.Reverse()
-		colors.BackgroundColor.A = 200
-		navItem.button = NewButton(ButtonStyle{
-			Icon:   navItem.Icon,
-			Colors: colors,
-			Radius: 10,
-		})
-		return
-	}
+	colors := theme.Current().AppBarColors.Reverse()
+	colors.BackgroundColor.A = 200
 	navItem.button = NewButton(ButtonStyle{
-		Icon:     navItem.Icon,
-		Text:     navItem.Name,
-		Colors:   theme.Current().AppBarColors.Reverse(),
-		Radius:   5,
-		TextSize: 14,
-		Inset:    layout.Inset{Top: 10, Right: 16, Bottom: 10, Left: 16},
+		Icon:   navItem.Icon,
+		Colors: colors,
+		Radius: 10,
 	})
 }
 
 func (n *NavDrawer) Layout(gtx C) D {
-	if n.navigationAxis == layout.Vertical {
-		return n.LayoutH(gtx)
-	}
-
-	n.Modal.OuterInset.Top = unit.Dp(gtx.Constraints.Max.Y * 4 / 5)
-	return n.Modal.Layout(gtx, func(gtx C) D {
-		layout.Center.Layout(gtx, func(gtx C) D {
-			return n.layoutNavList(gtx)
-		})
-		return D{Size: gtx.Constraints.Max}
-	})
-}
-
-func (n *NavDrawer) LayoutH(gtx C) D {
 	n.Modal.OuterInset.Right = unit.Dp(gtx.Constraints.Max.X / 3)
 	return n.Modal.Layout(gtx, func(gtx C) D {
 		layout.Flex{
@@ -139,14 +112,13 @@ func (n *NavDrawer) LayoutH(gtx C) D {
 func (n *NavDrawer) layoutNavList(gtx C) D {
 	n.selectedChanged = false
 	gtx.Constraints.Min.Y = 0
-	n.navList.Axis = n.navigationAxis
+	n.navList.Axis = layout.Vertical
 
 	return n.navList.Layout(gtx, len(n.items), func(gtx C, index int) D {
-		if n.navigationAxis == layout.Vertical {
-			gtx.Constraints.Max.Y = gtx.Dp(48)
-			gtx.Constraints.Min = gtx.Constraints.Max
-		}
-		dimensions := layout.Flex{Axis: n.navigationAxis}.Layout(gtx,
+		gtx.Constraints.Max.Y = gtx.Dp(48)
+		gtx.Constraints.Min = gtx.Constraints.Max
+
+		dimensions := layout.Flex{Axis: layout.Vertical}.Layout(gtx,
 			layout.Rigid(func(gtx C) D {
 				return n.items[index].Layout(gtx)
 			}),
@@ -179,12 +151,6 @@ func (n *NavDrawer) UnselectNavDestination() {
 
 func (n *NavDrawer) SetNavDestination(index int) {
 	n.changeSelected(index)
-	//for i, item := range n.items {
-	//	if item.Tag == tag {
-	//		n.changeSelected(i)
-	//		break
-	//	}
-	//}
 }
 
 func (n *NavDrawer) CurrentNavDestination() int {

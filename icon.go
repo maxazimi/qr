@@ -19,7 +19,11 @@ func NewIcon(data []byte) *Icon {
 	}
 }
 
-func (icon *Icon) Layout(gtx C, iconSize unit.Dp) D {
+func (icon *Icon) LayoutSize(gtx C, iconSize unit.Dp) D {
 	gtx.Constraints.Min.X = gtx.Dp(iconSize)
 	return icon.Icon.Layout(gtx, icon.Color)
+}
+
+func (icon *Icon) Layout(gtx C, col color.NRGBA) D {
+	return icon.Icon.Layout(gtx, col)
 }

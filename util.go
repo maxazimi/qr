@@ -12,6 +12,11 @@ import (
 	"math"
 )
 
+type (
+	C = layout.Context
+	D = layout.Dimensions
+)
+
 // Disabled blends color towards the luminance and multiplies alpha.
 // Blending towards luminance will desaturate the color.
 // Multiplying alpha blends the color together more with the background.

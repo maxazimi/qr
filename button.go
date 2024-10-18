@@ -106,15 +106,15 @@ type ButtonStyle struct {
 	Font        font.Font
 	IconGap     unit.Dp
 	Border      widget.Border
-	Icon        *widget.Icon
-	LoadingIcon *widget.Icon
+	Icon        *Icon
+	LoadingIcon *Icon
 	ImgIndex    int
 	img         *widget.Image
 	Animation   *ButtonAnimation
 }
 
 type Button struct {
-	*theme.Theme
+	th *theme.Theme
 	ButtonStyle
 	Clickable  *widget.Clickable
 	Label      *widget.Label
@@ -123,6 +123,7 @@ type Button struct {
 	Loading    bool
 	Flex       bool
 	hoverState bool
+	colorFixed bool
 }
 
 func NewButton(style ButtonStyle) *Button {
@@ -130,14 +131,19 @@ func NewButton(style ButtonStyle) *Button {
 		style.Animation = NewButtonAnimationDefault()
 	}
 
-	return &Button{
-		Theme:       theme.Current(),
+	b := &Button{
+		th:          theme.Current(),
 		ButtonStyle: style,
 		Clickable:   new(widget.Clickable),
 		Label:       new(widget.Label),
 		Focused:     false,
 		hoverState:  true,
 	}
+
+	if b.Colors != (theme.ButtonColors{}) {
+		b.colorFixed = true
+	}
+	return b
 }
 
 func (b *Button) SetLoading(loading bool) {
@@ -207,14 +213,12 @@ func (b *Button) handleEvents(gtx C) {
 	}
 }
 
-var emptyColors = theme.ButtonColors{}
-
 func (b *Button) Layout(gtx C) D {
-	b.Theme = theme.Current()
-	b.img = b.Theme.Images[b.ImgIndex]
+	b.th = theme.Current()
+	b.img = b.th.Images[b.ImgIndex]
 
-	if b.img == nil && b.Colors == emptyColors {
-		b.Colors = b.Theme.ButtonColors
+	if b.img == nil && !b.colorFixed {
+		b.Colors = b.th.ButtonColors
 	}
 
 	return b.Clickable.Layout(gtx, func(gtx C) D {

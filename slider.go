@@ -250,7 +250,7 @@ func (s *Slider) selectedItemIndicatorLayout(gtx C) D {
 					Left:   values.DP4,
 				}.Layout(gtx, func(gtx C) D {
 					return s.slideItems[i].button.Layout(gtx, func(gtx C) D {
-						return s.icon.Layout(gtx, values.DP12)
+						return s.icon.LayoutSize(gtx, values.DP12)
 					})
 				})
 			})

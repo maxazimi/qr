@@ -11,14 +11,11 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"github.com/maxazimi/v2ray-gio/ui/anim"
+	"github.com/maxazimi/v2ray-gio/ui/instance"
 	"github.com/maxazimi/v2ray-gio/ui/theme"
+	"github.com/maxazimi/v2ray-gio/ui/values"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
-)
-
-type (
-	C = layout.Context
-	D = layout.Dimensions
 )
 
 const (
@@ -108,8 +105,7 @@ type ModalStyle struct {
 
 type Modal struct {
 	ModalStyle
-	Visible bool
-	//CloseKeySet  string
+	Visible      bool
 	clickableOut *widget.Clickable
 	clickableIn  *widget.Clickable
 	closed       bool
@@ -118,7 +114,6 @@ type Modal struct {
 func NewModal(direction layout.Direction, outerInset, innerInset layout.Inset, radius unit.Dp,
 	animation ModalAnimation) *Modal {
 	modal := &Modal{
-		//CloseKeySet:  key.NameEscape + "|" + key.NameBack,
 		Visible:      false,
 		clickableOut: new(widget.Clickable),
 		clickableIn:  new(widget.Clickable),
@@ -178,28 +173,14 @@ func (m *Modal) handleKeyClose(gtx C) {
 		}
 		m.SetVisible(false)
 	}
-
-	//if m.CloseKeySet != "" {
-	//	key.InputOp{
-	//		Tag:  m,
-	//		Keys: m.CloseKeySet,
-	//	}.Add(gtx.ops)
-	//
-	//	for _, e := range gtx.Events(m) {
-	//		switch e := e.(type) {
-	//		case key.Event:
-	//			if e.State == key.Press {
-	//				m.SetVisible(false)
-	//			}
-	//		}
-	//	}
-	//}
 }
 
 func (m *Modal) Layout(gtx C, w layout.Widget) D {
-	m.closed = false
 	if !m.Visible {
 		return D{Size: gtx.Constraints.Max}
+	}
+	if m.closed {
+		m.closed = false
 	}
 
 	m.ModalColors = theme.Current().ModalColors
@@ -238,8 +219,15 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 		defer transOut(gtx, value).Push(gtx.Ops).Pop()
 	}
 
+	inset := m.OuterInset
+	if width := instance.CurrentAppWidth(); width > values.StartMobileView {
+		padding := (width - values.StartMobileView) / 2
+		inset.Left += padding
+		inset.Right += padding
+	}
+
 	r := op.Record(gtx.Ops)
-	dims := m.OuterInset.Layout(gtx, func(gtx C) D {
+	dims := inset.Layout(gtx, func(gtx C) D {
 		return m.Direction.Layout(gtx, func(gtx C) D {
 			r := op.Record(gtx.Ops)
 			dims := m.clickableIn.Layout(gtx, func(gtx C) D {
