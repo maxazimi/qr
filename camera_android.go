@@ -250,7 +250,7 @@ static int openCamera(int cameraId, int width, int height) {
 		return -1;
 	}
 
-	uint8_t buf[10];
+	char buf[10];
 	sprintf(buf, "%s", id);
 	if (ACameraManager_openCamera(cameraManager, buf, &cameraDeviceCallbacks, &cameraDevice) != ACAMERA_OK) {
 		LOGE("Failed to open camera");
