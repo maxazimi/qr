@@ -12,6 +12,7 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
+	"gioui.org/widget/material"
 	"github.com/maxazimi/v2ray-gio/ui/anim"
 	"github.com/maxazimi/v2ray-gio/ui/theme"
 	"github.com/tanema/gween"
@@ -99,6 +100,7 @@ func (b *ButtonAnimation) Layout(gtx C, w layout.Widget) D {
 type ButtonStyle struct {
 	Tag         interface{}
 	Text        string
+	TipText     string
 	Colors      theme.ButtonColors
 	Radius      unit.Dp
 	TextSize    unit.Sp
@@ -114,10 +116,10 @@ type ButtonStyle struct {
 }
 
 type Button struct {
-	th *theme.Theme
 	ButtonStyle
 	Clickable  *widget.Clickable
 	Label      *widget.Label
+	tooltip    *Tooltip
 	Focused    bool
 	Disabled   bool
 	Loading    bool
@@ -132,10 +134,10 @@ func NewButton(style ButtonStyle) *Button {
 	}
 
 	b := &Button{
-		th:          theme.Current(),
 		ButtonStyle: style,
 		Clickable:   new(widget.Clickable),
 		Label:       new(widget.Label),
+		tooltip:     NewTooltip(),
 		Focused:     false,
 		hoverState:  true,
 	}
@@ -214,11 +216,11 @@ func (b *Button) handleEvents(gtx C) {
 }
 
 func (b *Button) Layout(gtx C) D {
-	b.th = theme.Current()
-	b.img = b.th.Images[b.ImgIndex]
+	th := theme.Current()
+	b.img = th.Images[b.ImgIndex]
 
 	if b.img == nil && !b.colorFixed {
-		b.Colors = b.th.ButtonColors
+		b.Colors = th.ButtonColors
 	}
 
 	return b.Clickable.Layout(gtx, func(gtx C) D {
@@ -252,8 +254,15 @@ func (b *Button) Layout(gtx C) D {
 					NW:   gtx.Dp(b.Radius),
 				}.Op(gtx.Ops),
 			)
-
 			m.Add(gtx.Ops)
+
+			// TODO: unfinished
+			if b.hoverState && b.TipText != "" {
+				left := unit.Dp(-dims.Size.X/4 + 5)
+				b.tooltip.Layout(gtx, layout.Inset{Top: -35, Left: left},
+					material.Label(th.Theme, 10, b.TipText).Layout)
+			}
+
 			return dims
 		})
 	})
