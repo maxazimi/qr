@@ -82,3 +82,16 @@ func pxf(c unit.Metric, v unit.Dp) int {
 	}
 	return int(s) * int(v)
 }
+
+func Boxed(gtx C, w layout.Widget) D {
+	r := op.Record(gtx.Ops)
+	dims := w(gtx)
+	c := r.Stop()
+
+	paint.FillShape(gtx.Ops, color.NRGBA{A: 50}, clip.UniformRRect(
+		image.Rectangle{Max: image.Pt(dims.Size.X, dims.Size.Y)},
+		gtx.Dp(10)).Op(gtx.Ops))
+
+	c.Add(gtx.Ops)
+	return dims
+}
