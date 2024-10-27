@@ -27,5 +27,5 @@ const (
 	TextSize34 = unit.Sp(28)
 	TextSize60 = unit.Sp(34)
 
-	ModalRadius = unit.Dp(25)
+	ModalRadius = unit.Dp(45)
 )
