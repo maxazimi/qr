@@ -72,7 +72,7 @@ var Light = &Theme{
 
 	ModalColors: ModalColors{
 		BackgroundColor:  BlueGreyLighten5,
-		BackgroundColor2: BlueGreyLighten2,
+		BackgroundColor2: BlueGreyLighten4,
 		TextColor:        BlackColor,
 		BackdropColor:    &color.NRGBA{A: 100},
 	},

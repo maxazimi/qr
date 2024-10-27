@@ -3,13 +3,14 @@ package theme
 import "image/color"
 
 var (
-	WhiteColor     = color.NRGBA{R: 250, G: 250, B: 250, A: 255}
-	BlackColor     = color.NRGBA{R: 10, G: 10, B: 10, A: 255}
-	GreyColor      = color.NRGBA{R: 60, G: 60, B: 60, A: 255}
-	BlueColor      = color.NRGBA{R: 0, G: 0, B: 255, A: 255}
-	BlueColor1     = rgb(0x3377FF)
-	BlueGreyColor  = rgb(0x496495)
-	BlueGreyColor1 = rgb(0x3a517b)
+	WhiteColor        = color.NRGBA{R: 250, G: 250, B: 250, A: 255}
+	BlurredWhiteColor = color.NRGBA{R: 250, G: 250, B: 250, A: 70}
+	BlackColor        = color.NRGBA{R: 10, G: 10, B: 10, A: 255}
+	GreyColor         = color.NRGBA{R: 60, G: 60, B: 60, A: 255}
+	BlueColor         = color.NRGBA{R: 0, G: 0, B: 255, A: 255}
+	BlueColor1        = rgb(0x3377FF)
+	BlueGreyColor     = rgb(0x496495)
+	BlueGreyColor1    = rgb(0x3a517b)
 )
 
 // Dark Colors

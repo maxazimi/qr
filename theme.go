@@ -58,7 +58,7 @@ func SetCurrent(key string) {
 	}
 
 	config.Get().ThemeName = name
-	//config.Get().Save()
+	//config.Get().Commit()
 }
 
 func IsDarkModeOn() bool {
