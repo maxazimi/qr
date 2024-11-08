@@ -98,9 +98,9 @@ var Light = &Theme{
 
 	ListTextColor:        BlackColor,
 	ListBgColor:          WhiteColor,
-	ListItemHoverBgColor: color.NRGBA{R: 225, G: 225, B: 225, A: 255},
+	ListItemHoverBgColor: BlueGreyLighten4,
 	ListScrollBarBgColor: BlackColor,
-	ListItemTagBgColor:   color.NRGBA{R: 225, G: 225, B: 225, A: 255},
+	ListItemTagBgColor:   BlueGreyLighten3,
 	ListItemTagTextColor: BlackColor,
 
 	// Images
