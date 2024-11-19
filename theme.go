@@ -193,8 +193,8 @@ type Theme struct {
 	// List
 	ListTextColor        color.NRGBA
 	ListBgColor          color.NRGBA
+	ListItemBgColor      color.NRGBA
 	ListItemHoverBgColor color.NRGBA
-	ListScrollBarBgColor color.NRGBA
 	ListItemTagBgColor   color.NRGBA
 	ListItemTagTextColor color.NRGBA
 

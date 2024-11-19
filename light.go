@@ -98,8 +98,8 @@ var Light = &Theme{
 
 	ListTextColor:        BlackColor,
 	ListBgColor:          WhiteColor,
+	ListItemBgColor:      LightGray2,
 	ListItemHoverBgColor: BlueGreyLighten4,
-	ListScrollBarBgColor: BlackColor,
 	ListItemTagBgColor:   BlueGreyLighten3,
 	ListItemTagTextColor: BlackColor,
 
