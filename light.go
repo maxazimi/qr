@@ -14,32 +14,24 @@ var Light = &Theme{
 	GreenColor:      color.NRGBA{R: 0, G: 225, B: 0, A: 255},
 	RedColor:        color.NRGBA{R: 225, G: 0, B: 0, A: 255},
 
-	PrimaryColor:     LightPrimary,
-	PageNavTextColor: LightPageNavText,
+	PrimaryColor:   LightPrimary,
+	DeepBlueColor:  LightDeepBlue,
+	Gray1Color:     LightGray1,
+	Gray2Color:     LightGray2,
+	Gray3Color:     LightGray3,
+	Gray4Color:     LightGray4,
+	Gray5Color:     LightGray5,
+	SurfaceColor:   LightSurface,
+	LightGrayColor: LightLightGray,
+
+	// text colors
 	TextColor:        LightText,
+	TextMuteColor:    color.NRGBA{A: 200},
+	PageNavTextColor: LightPageNavText,
 	GrayText1Color:   LightGrayText1,
 	GrayText2Color:   LightGrayText2,
 	GrayText3Color:   LightGrayText3,
 	GrayText4Color:   LightGrayText4,
-	DeepBlueColor:    LightDeepBlue,
-	Gray1Color:       LightGray1,
-	Gray2Color:       LightGray2,
-	Gray3Color:       LightGray3,
-	Gray4Color:       LightGray4,
-	Gray5Color:       LightGray5,
-	SurfaceColor:     LightSurface,
-	LightGrayColor:   LightLightGray,
-
-	// text colors
-	//TextColor:     rgb(0x091440),
-	TextMuteColor: color.NRGBA{A: 200},
-
-	//IndicatorColor:       color.NRGBA{R: 255, G: 255, B: 255, A: 50},
-	//DividerColor:         color.NRGBA{A: 50},
-	//BgColor:              WhiteColor,
-	//BgGradientStartColor: color.NRGBA{R: 250, G: 250, B: 250, A: 255},
-	//BgGradientEndColor:   color.NRGBA{R: 210, G: 210, B: 210, A: 255},
-	//HideBalanceBgColor:   color.NRGBA{R: 200, G: 200, B: 200, A: 255},
 
 	ButtonColors: ButtonColors{
 		TextColor:            WhiteColor,
@@ -102,7 +94,4 @@ var Light = &Theme{
 	ListItemHoverBgColor: BlueGreyLighten4,
 	ListItemTagBgColor:   BlueGreyLighten3,
 	ListItemTagTextColor: BlackColor,
-
-	// Images
-	Images: images,
 }

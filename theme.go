@@ -11,6 +11,7 @@ import (
 	"github.com/maxazimi/v2ray-gio/config"
 	"image"
 	"image/color"
+	"log"
 	"strings"
 )
 
@@ -62,6 +63,15 @@ func SetCurrent(key string) {
 
 func IsDarkModeOn() bool {
 	return current == DARK
+}
+
+func GetImage(imgKey string) *widget.Image {
+	img, exists := imageMap[imgKey]
+	if !exists {
+		log.Printf("key[%s] does not exist", imgKey)
+		return nil
+	}
+	return img[current]
 }
 
 type Backdrop struct {
@@ -126,39 +136,28 @@ type Theme struct {
 	// generic colors
 	BackgroundColor color.NRGBA
 	ForegroundColor color.NRGBA
-	//PrimaryColor    color.NRGBA
-	//SurfaceColor    color.NRGBA
-	//DeepBlueColor   color.NRGBA
-	GreenColor color.NRGBA
-	RedColor   color.NRGBA
+	GreenColor      color.NRGBA
+	RedColor        color.NRGBA
 
 	// specific colors
-	PrimaryColor     color.NRGBA
-	PageNavTextColor color.NRGBA
+	PrimaryColor   color.NRGBA
+	DeepBlueColor  color.NRGBA
+	Gray1Color     color.NRGBA
+	Gray2Color     color.NRGBA
+	Gray3Color     color.NRGBA
+	Gray4Color     color.NRGBA
+	Gray5Color     color.NRGBA
+	SurfaceColor   color.NRGBA
+	LightGrayColor color.NRGBA
+
+	// text colors
 	TextColor        color.NRGBA
+	TextMuteColor    color.NRGBA
+	PageNavTextColor color.NRGBA
 	GrayText1Color   color.NRGBA
 	GrayText2Color   color.NRGBA
 	GrayText3Color   color.NRGBA
 	GrayText4Color   color.NRGBA
-	DeepBlueColor    color.NRGBA
-	Gray1Color       color.NRGBA
-	Gray2Color       color.NRGBA
-	Gray3Color       color.NRGBA
-	Gray4Color       color.NRGBA
-	Gray5Color       color.NRGBA
-	SurfaceColor     color.NRGBA
-	LightGrayColor   color.NRGBA
-
-	// text colors
-	//TextColor     color.NRGBA
-	TextMuteColor color.NRGBA
-
-	//IndicatorColor       color.NRGBA
-	//DividerColor         color.NRGBA
-	//BgColor              color.NRGBA
-	//BgGradientStartColor color.NRGBA
-	//BgGradientEndColor   color.NRGBA
-	//HideBalanceBgColor   color.NRGBA
 
 	// Button
 	ButtonColors ButtonColors
@@ -197,9 +196,6 @@ type Theme struct {
 	ListItemHoverBgColor color.NRGBA
 	ListItemTagBgColor   color.NRGBA
 	ListItemTagTextColor color.NRGBA
-
-	// Images
-	Images []*widget.Image
 }
 
 func Fill(gtx C, col color.NRGBA) D {
