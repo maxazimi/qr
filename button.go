@@ -110,7 +110,7 @@ type ButtonStyle struct {
 	Border      widget.Border
 	Icon        *Icon
 	LoadingIcon *Icon
-	ImgIndex    int
+	ImgKey      string
 	img         *widget.Image
 	Animation   *ButtonAnimation
 }
@@ -217,7 +217,12 @@ func (b *Button) handleEvents(gtx C) {
 
 func (b *Button) Layout(gtx C) D {
 	th := theme.Current()
-	b.img = th.Images[b.ImgIndex]
+
+	if b.Loading {
+		b.img = theme.GetImage(theme.ICLoading)
+	} else if b.ImgKey != "" {
+		b.img = theme.GetImage(b.ImgKey)
+	}
 
 	if b.img == nil && !b.colorFixed {
 		b.Colors = th.ButtonColors
