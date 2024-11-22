@@ -90,11 +90,11 @@ func NewSlider() *Slider {
 		icon:       NewIcon(icons.ImageBrightness1),
 		slideItems: make([]*sliderItem, 0),
 		prevButton: NewButton(ButtonStyle{
-			ImgIndex:  theme.ImageChevronLeft,
+			ImgKey:    theme.ICChevronLeft,
 			Animation: NewButtonAnimationDefault(),
 		}),
 		nextButton: NewButton(ButtonStyle{
-			ImgIndex:  theme.ImageChevronRight,
+			ImgKey:    theme.ICChevronRight,
 			Animation: NewButtonAnimationDefault(),
 		}),
 		ButtonBackgroundColor:    th.LightGrayColor,

@@ -14,7 +14,7 @@ import (
 type NavItem struct {
 	Tag      interface{}
 	Name     string
-	ImgIndex int
+	ImgKey   string
 	Icon     *Icon
 	button   *Button
 	Selected bool

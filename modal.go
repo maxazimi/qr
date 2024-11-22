@@ -220,7 +220,8 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 	}
 
 	inset := m.OuterInset
-	if width := instance.CurrentAppWidth(); width > values.StartMobileView {
+	if width := instance.CurrentAppWidth(); width > values.StartMobileView &&
+		m.OuterInset.Left == m.OuterInset.Right {
 		padding := (width - values.StartMobileView) / 2
 		inset.Left += padding
 		inset.Right += padding

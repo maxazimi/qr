@@ -43,28 +43,18 @@ type AppBar struct {
 	Title string
 	//navDrawer       *NavDrawer
 	moreButton *Button
-	//navButton       *Button
-	//activeNavButton *Button
 }
 
-func NewAppBar(drawer *NavDrawer) *AppBar {
+func NewAppBar() *AppBar {
 	//navIcon := NewIcon(icons.NavigationMenu)
-	//backIcon := NewIcon(icons.NavigationArrowBack)
 	moreIcon := NewIcon(icons.NavigationMoreVert)
-	//navButton := NewButton(ButtonStyle{
-	//	Icon:  navIcon,
-	//	Inset: layout.UniformInset(16),
-	//})
 
 	return &AppBar{
-		//navDrawer: drawer,
 		moreButton: NewButton(ButtonStyle{
 			Icon:   moreIcon,
 			Colors: theme.Current().AppBarColors,
 			Inset:  layout.UniformInset(16),
 		}),
-		//navButton:       navButton,
-		//activeNavButton: navButton,
 	}
 }
 
@@ -72,46 +62,34 @@ func (a *AppBar) SetActions(actions AppBarAction) {
 	a.AppBarAction = actions
 }
 
-func (a *AppBar) Events(gtx C) []AppBarEvent {
-	var events []AppBarEvent
+//func (a *AppBar) Events(gtx C) []AppBarEvent {
+//	var events []AppBarEvent
+//
+//	if a.AppBarMenu != nil {
+//		if a.moreButton.Clicked(gtx) {
+//			a.AppBarMenu.Appear()
+//		}
+//		for _, button := range a.AppBarMenu.buttons {
+//			if button.Clicked(gtx) {
+//				events = append(events, AppBarMoreActionClicked{Tag: button.Tag})
+//				a.AppBarMenu.Disappear()
+//			}
+//		}
+//	}
+//	return events
+//}
 
-	//if a.activeNavButton.Clicked(gtx) {
-	//	events = append(events, AppBarNavigationClicked{})
-	//}
-
+func (a *AppBar) Layout(gtx C) D {
 	if a.AppBarMenu != nil {
 		if a.moreButton.Clicked(gtx) {
 			a.AppBarMenu.Appear()
 		}
-		for _, button := range a.AppBarMenu.buttons {
-			if button.Clicked(gtx) {
-				events = append(events, AppBarMoreActionClicked{Tag: button.Tag})
-				a.AppBarMenu.Disappear()
-			}
-		}
 	}
-	return events
-}
 
-func (a *AppBar) Layout(gtx C) D {
 	gtx.Constraints.Max.Y = gtx.Dp(56)
 	a.moreButton.Colors = theme.Current().AppBarColors
-	//color1 := theme.Current().AppBarColors.BackgroundColor
-	//color2 := theme.Current().AppBarColors.BorderColor
-	//paintGradient(gtx, gtx.Constraints.Max, 0, color1, color2)
 
 	layout.Flex{Alignment: layout.Middle}.Layout(gtx,
-		//layout.Rigid(func(gtx C) D {
-		//	return a.activeNavButton.Layout(gtx)
-		//}),
-		//layout.Rigid(func(gtx C) D {
-		//	return layout.Inset{Left: 16}.Layout(gtx, func(gtx C) D {
-		//		title := material.Body1(theme.Current().Theme, a.Title)
-		//		title.Color = th.AppBarColors.TextColor
-		//		title.TextSize = 18
-		//		return title.Layout(gtx)
-		//	})
-		//}),
 		layout.Flexed(1, func(gtx C) D {
 			gtx.Constraints.Min.Y = gtx.Constraints.Max.Y
 			return layout.E.Layout(gtx, func(gtx C) D {
@@ -142,6 +120,7 @@ func NewAppBarMenu(items ...MenuItem) *AppBarMenu {
 			Tag:      item.Tag,
 			Text:     item.Name,
 			TextSize: 16,
+			Colors:   theme.Current().AppBarColors,
 			Radius:   5,
 			Inset:    layout.UniformInset(5),
 		})
