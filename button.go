@@ -14,11 +14,14 @@ import (
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 	"github.com/maxazimi/v2ray-gio/ui/anim"
+	"github.com/maxazimi/v2ray-gio/ui/instance"
 	"github.com/maxazimi/v2ray-gio/ui/theme"
+	"github.com/maxazimi/v2ray-gio/ui/values"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 	"image"
 	"image/color"
+	"time"
 )
 
 const (
@@ -100,7 +103,8 @@ func (b *ButtonAnimation) Layout(gtx C, w layout.Widget) D {
 type ButtonStyle struct {
 	Tag         interface{}
 	Text        string
-	TipText     string
+	Description string
+	tipText     string
 	Colors      theme.ButtonColors
 	Radius      unit.Dp
 	TextSize    unit.Sp
@@ -160,6 +164,14 @@ func (b *Button) SetLoading(loading bool) {
 	}
 }
 
+func (b *Button) SetTipText(text string) {
+	b.tipText = text
+	time.AfterFunc(time.Second, func() {
+		b.tipText = ""
+		instance.Window().Invalidate()
+	})
+}
+
 func (b *Button) Clicked(gtx C) bool {
 	if b.Disabled {
 		return false
@@ -195,6 +207,8 @@ func (b *Button) handleEvents(gtx C) {
 
 		if !b.hoverState {
 			b.hoverState = true
+			b.tipText = b.Description
+
 			if b.Animation.animIn != nil {
 				b.Animation.animIn.Start()
 				gtx.Execute(op.InvalidateCmd{})
@@ -205,6 +219,8 @@ func (b *Button) handleEvents(gtx C) {
 		}
 	} else if b.hoverState {
 		b.hoverState = false
+		b.tipText = ""
+
 		if b.Animation.animOut != nil {
 			b.Animation.animOut.Start()
 			gtx.Execute(op.InvalidateCmd{})
@@ -261,11 +277,13 @@ func (b *Button) Layout(gtx C) D {
 			)
 			m.Add(gtx.Ops)
 
-			// TODO: unfinished
-			if b.hoverState && b.TipText != "" {
-				left := unit.Dp(-dims.Size.X/4 + 5)
-				b.tooltip.Layout(gtx, layout.Inset{Top: -35, Left: left},
-					material.Label(th.Theme, 10, b.TipText).Layout)
+			// TODO: needs more work
+			if b.tipText != "" {
+				left := unit.Dp(-dims.Size.X / 2)
+				layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+					return b.tooltip.Layout(gtx, layout.Inset{Top: -45, Left: left},
+						material.Label(th.Theme, values.TextSize10, b.tipText).Layout)
+				})
 			}
 
 			return dims
