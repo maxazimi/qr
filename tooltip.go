@@ -3,20 +3,20 @@ package components
 import (
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/unit"
 	"gioui.org/widget"
 	"github.com/maxazimi/v2ray-gio/ui/theme"
-	"image"
 )
 
 type Tooltip struct {
-	hoverable *Hoverable
-	shadow    *Shadow
+	shadow  *Shadow
+	padding layout.Inset
 }
 
-func NewTooltip() *Tooltip {
+func NewTooltip(padding unit.Dp) *Tooltip {
 	return &Tooltip{
-		hoverable: NewHoverable(),
-		shadow:    NewShadow(),
+		shadow:  NewShadow(),
+		padding: layout.UniformInset(padding),
 	}
 }
 
@@ -33,7 +33,7 @@ func (t *Tooltip) layout(gtx C, pos layout.Inset, w layout.Widget) D {
 				return LinearLayout{
 					Width:      WrapContent,
 					Height:     WrapContent,
-					Padding:    layout.UniformInset(12),
+					Padding:    t.padding,
 					Background: th.SurfaceColor,
 					Border:     border,
 					Shadow:     t.shadow,
@@ -41,18 +41,6 @@ func (t *Tooltip) layout(gtx C, pos layout.Inset, w layout.Widget) D {
 			}),
 		)
 	})
-}
-
-func (t *Tooltip) LayoutHovered(gtx C, rect image.Rectangle, pos layout.Inset, w layout.Widget) D {
-	if t.hoverable.Hovered() {
-		m := op.Record(gtx.Ops)
-		t.layout(gtx, pos, w)
-		call := m.Stop()
-		ops := gtx.Ops
-		op.Defer(ops, call)
-	}
-	t.hoverable.Layout(gtx, rect)
-	return D{Size: rect.Min}
 }
 
 func (t *Tooltip) Layout(gtx C, pos layout.Inset, w layout.Widget) D {

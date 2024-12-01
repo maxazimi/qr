@@ -25,7 +25,8 @@ import (
 )
 
 const (
-	ratio float32 = 0.95
+	ratio          float32 = 0.95
+	tooltipPadding         = 12
 )
 
 type ButtonAnimation struct {
@@ -141,7 +142,7 @@ func NewButton(style ButtonStyle) *Button {
 		ButtonStyle: style,
 		Clickable:   new(widget.Clickable),
 		Label:       new(widget.Label),
-		tooltip:     NewTooltip(),
+		tooltip:     NewTooltip(tooltipPadding),
 		Focused:     false,
 		hoverState:  true,
 	}
@@ -253,9 +254,9 @@ func (b *Button) Layout(gtx C) D {
 			dims := b.Border.Layout(gtx, func(gtx C) D {
 				return b.Inset.Layout(gtx, func(gtx C) D {
 					if b.Text != "" {
-						return layout.Center.Layout(gtx, b.textWidget)
+						return layout.Center.Layout(gtx, b.layoutText)
 					} else {
-						return layout.Center.Layout(gtx, b.iconWidget)
+						return layout.Center.Layout(gtx, b.layoutIcon)
 					}
 				})
 			})
@@ -277,12 +278,17 @@ func (b *Button) Layout(gtx C) D {
 			)
 			m.Add(gtx.Ops)
 
-			// TODO: needs more work
+			// Tooltip
 			if b.tipText != "" {
-				left := unit.Dp(-dims.Size.X / 2)
-				layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-					return b.tooltip.Layout(gtx, layout.Inset{Top: -45, Left: left},
-						material.Label(th.Theme, values.TextSize10, b.tipText).Layout)
+				ops := gtx.Ops
+				c := op.Record(ops)
+				labelDims := material.Label(th.Theme, values.TextSize10, b.tipText).Layout(gtx)
+				m := c.Stop()
+
+				left := unit.Dp(subtract(dims.Size.X, labelDims.Size.X+tooltipPadding*2)) / 2
+				b.tooltip.Layout(gtx, layout.Inset{Top: -45, Left: -left}, func(gtx C) D {
+					m.Add(ops)
+					return labelDims
 				})
 			}
 
@@ -291,7 +297,7 @@ func (b *Button) Layout(gtx C) D {
 	})
 }
 
-func (b *Button) iconWidget(gtx C) D {
+func (b *Button) layoutIcon(gtx C) D {
 	if b.Icon == nil && b.img == nil {
 		return D{}
 	}
@@ -333,11 +339,11 @@ func (b *Button) iconWidget(gtx C) D {
 	return dims
 }
 
-func (b *Button) textWidget(gtx C) D {
+func (b *Button) layoutText(gtx C) D {
 	var children []layout.FlexChild
 	if b.Icon != nil {
 		children = append(children,
-			layout.Rigid(b.iconWidget),
+			layout.Rigid(b.layoutIcon),
 			layout.Rigid(layout.Spacer{Width: b.IconGap}.Layout),
 		)
 	}
@@ -354,4 +360,11 @@ func (b *Button) textWidget(gtx C) D {
 		Axis:      layout.Horizontal,
 		Alignment: layout.Middle,
 	}.Layout(gtx, children...)
+}
+
+func subtract(a, b int) int {
+	if a > b {
+		return a - b
+	}
+	return b - a
 }
