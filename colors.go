@@ -11,6 +11,9 @@ var (
 	BlueColor1        = rgb(0x3377FF)
 	BlueGreyColor     = rgb(0x496495)
 	BlueGreyColor1    = rgb(0x3a517b)
+	SuccessColor      = rgb(0x41bf53)
+	YellowColor       = rgb(0xFEE3AA)
+	DangerColor       = rgb(0xed6d47)
 )
 
 // Dark Colors

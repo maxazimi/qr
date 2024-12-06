@@ -42,7 +42,7 @@ var Light = &Theme{
 	},
 
 	InputColors: InputColors{
-		BackgroundColor: GreyColor,
+		BackgroundColor: color.NRGBA{},
 		TextColor:       BlackColor,
 		BorderColor:     BlackColor,
 		HintColor:       color.NRGBA{A: 200},

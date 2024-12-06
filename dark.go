@@ -42,7 +42,7 @@ var Dark = &Theme{
 	},
 
 	InputColors: InputColors{
-		BackgroundColor: BlackColor,
+		BackgroundColor: color.NRGBA{},
 		TextColor:       WhiteColor,
 		BorderColor:     WhiteColor,
 		HintColor:       color.NRGBA{R: 255, G: 255, B: 255, A: 50},
