@@ -16,6 +16,7 @@ import (
 	"github.com/maxazimi/v2ray-gio/ui/values"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
+	"image/color"
 )
 
 const (
@@ -96,11 +97,12 @@ func NewModalAnimationLeftDown() ModalAnimation {
 
 type ModalStyle struct {
 	theme.ModalColors
-	Direction  layout.Direction
-	OuterInset layout.Inset
-	InnerInset layout.Inset
-	Radius     unit.Dp
-	Animation  ModalAnimation
+	FixedBGColor color.NRGBA
+	Direction    layout.Direction
+	OuterInset   layout.Inset
+	InnerInset   layout.Inset
+	Radius       unit.Dp
+	Animation    ModalAnimation
 }
 
 type Modal struct {
@@ -123,7 +125,6 @@ func NewModal(direction layout.Direction, outerInset, innerInset layout.Inset, r
 	modal.OuterInset = outerInset
 	modal.InnerInset = innerInset
 	modal.Radius = radius
-	modal.ModalColors = theme.Current().ModalColors
 	modal.Animation = animation
 
 	return modal
@@ -220,9 +221,9 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 	}
 
 	inset := m.OuterInset
-	if width := instance.CurrentAppWidth(); width > values.StartMobileView &&
+	if width := instance.CurrentAppWidth(); width > values.MaxMobileWidth &&
 		m.OuterInset.Left == m.OuterInset.Right {
-		padding := (width - values.StartMobileView) / 2
+		padding := (width - values.MaxMobileWidth) / 2
 		inset.Left += padding
 		inset.Right += padding
 	}
@@ -236,7 +237,11 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 			})
 			c := r.Stop()
 
-			paintGradient(gtx, dims.Size, int(m.Radius), m.BackgroundColor, m.BackgroundColor2)
+			if m.FixedBGColor.A > 0 {
+				paintColor(gtx, dims.Size, int(m.Radius), m.FixedBGColor)
+			} else {
+				paintGradient(gtx, dims.Size, int(m.Radius), m.BackgroundColor, m.BackgroundColor2)
+			}
 
 			c.Add(gtx.Ops)
 			return dims

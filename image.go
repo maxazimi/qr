@@ -27,13 +27,10 @@ type Image struct {
 	aspectRatio int
 
 	// Keep a cache for scaled images to reduce resource use.
-	layoutSizeMtx sync.Mutex
-	layoutSizeDp  unit.Dp
-	layoutSizeImg *image.RGBA
-
-	layoutSize2Mtx                 sync.Mutex
-	layoutSize2DpX, layoutSize2DpY unit.Dp
-	layoutSize2Img                 *image.RGBA
+	layoutSizeMtx  sync.Mutex
+	layoutSizeDp   unit.Dp
+	layoutSizeImg  *image.RGBA
+	layoutSize2Img *image.RGBA
 }
 
 func NewImage(src image.Image) *Image {

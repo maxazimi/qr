@@ -22,70 +22,65 @@ type AppBarNavigationClicked struct{}
 func (a AppBarNavigationClicked) AppBarEvent() {}
 
 type AppBarMoreActionClicked struct {
-	Tag interface{}
+	*Button
 }
 
 func (a AppBarMoreActionClicked) AppBarEvent() {}
 
-type MenuItem struct {
-	Name string
-	Tag  interface{}
-}
-
 type AppBarAction struct {
 	*AppBarMenu
-	Buttons    []*Button
-	IsMainPage bool
+	Buttons []*Button
 }
 
 type AppBar struct {
 	AppBarAction
-	Title string
-	//navDrawer       *NavDrawer
+	Title      string
 	moreButton *Button
 }
 
 func NewAppBar() *AppBar {
-	//navIcon := NewIcon(icons.NavigationMenu)
-	moreIcon := NewIcon(icons.NavigationMoreVert)
-
 	return &AppBar{
 		moreButton: NewButton(ButtonStyle{
-			Icon:   moreIcon,
+			Icon:   NewIcon(icons.NavigationMoreVert),
 			Colors: theme.Current().AppBarColors,
 			Inset:  layout.UniformInset(16),
 		}),
 	}
 }
 
+func (a *AppBar) CurrentActions() AppBarAction {
+	return a.AppBarAction
+}
+
 func (a *AppBar) SetActions(actions AppBarAction) {
 	a.AppBarAction = actions
 }
 
-//func (a *AppBar) Events(gtx C) []AppBarEvent {
-//	var events []AppBarEvent
-//
-//	if a.AppBarMenu != nil {
-//		if a.moreButton.Clicked(gtx) {
-//			a.AppBarMenu.Appear()
-//		}
-//		for _, button := range a.AppBarMenu.buttons {
-//			if button.Clicked(gtx) {
-//				events = append(events, AppBarMoreActionClicked{Tag: button.Tag})
-//				a.AppBarMenu.Disappear()
-//			}
-//		}
-//	}
-//	return events
-//}
-
-func (a *AppBar) Layout(gtx C) D {
-	if a.AppBarMenu != nil {
-		if a.moreButton.Clicked(gtx) {
-			a.AppBarMenu.Appear()
-		}
+func (a *AppBar) Events(gtx C) []AppBarEvent {
+	if a.AppBarMenu == nil {
+		return nil
 	}
 
+	if a.moreButton.Clicked(gtx) {
+		a.AppBarMenu.Appear()
+	}
+
+	if !a.AppBarMenu.IsVisible() {
+		return nil
+	}
+
+	var events []AppBarEvent
+	for _, button := range a.AppBarMenu.buttons {
+		if !button.Disabled && button.Clicked(gtx) {
+			button.Clickable.Click()
+			events = append(events, AppBarMoreActionClicked{Button: button})
+			a.AppBarMenu.Disappear()
+		}
+	}
+	return events
+}
+
+func (a *AppBar) Layout(gtx C) D {
 	gtx.Constraints.Max.Y = gtx.Dp(56)
 	a.moreButton.Colors = theme.Current().AppBarColors
 
@@ -111,20 +106,14 @@ type AppBarMenu struct {
 	flexChild []layout.FlexChild
 }
 
-func NewAppBarMenu(items ...MenuItem) *AppBarMenu {
-	m := &AppBarMenu{Modal: NewModal(layout.SW, layout.UniformInset(0), layout.UniformInset(0), 5,
-		NewModalAnimationLeftDown())}
+func NewAppBarMenu(buttons []*Button) *AppBarMenu {
+	m := &AppBarMenu{
+		Modal: NewModal(layout.SW, layout.UniformInset(0), layout.UniformInset(0), 10,
+			NewModalAnimationLeftDown()),
+	}
 
-	for _, item := range items {
-		button := NewButton(ButtonStyle{
-			Tag:      item.Tag,
-			Text:     item.Name,
-			TextSize: 16,
-			Colors:   theme.Current().AppBarColors,
-			Radius:   5,
-			Inset:    layout.UniformInset(5),
-		})
-		m.buttons = append(m.buttons, button)
+	m.buttons = buttons
+	for _, button := range buttons {
 		m.flexChild = append(m.flexChild, layout.Rigid(func(gtx C) D {
 			button.Colors.TextColor = theme.Current().ModalColors.TextColor
 			return button.Layout(gtx)
@@ -134,6 +123,7 @@ func NewAppBarMenu(items ...MenuItem) *AppBarMenu {
 }
 
 func (m *AppBarMenu) Layout(gtx C) D {
+	th := theme.Current()
 	gtx.Constraints.Min = image.Pt(0, 0)
 
 	var children []layout.FlexChild
@@ -145,14 +135,23 @@ func (m *AppBarMenu) Layout(gtx C) D {
 
 	gtx.Constraints.Min = gtx.Constraints.Max
 	pos := gtx.Constraints.Max.Sub(dims.Size)
-	m.Modal.OuterInset.Bottom = unit.Dp(pos.Y)
-	m.Modal.OuterInset.Left = unit.Dp(pos.X)
-	m.Modal.BackgroundColor = theme.Current().ModalColors.BackgroundColor
+
+	m.Modal.OuterInset.Bottom = unit.Dp(float32(pos.Y) / gtx.Metric.PxPerDp)
+	m.Modal.OuterInset.Left = unit.Dp(float32(pos.X) / gtx.Metric.PxPerDp)
+	m.Modal.FixedBGColor = th.SurfaceColor
 
 	return m.Modal.Layout(gtx, func(gtx C) D {
 		c.Add(gtx.Ops)
 		return D{Size: gtx.Constraints.Max}
 	})
+}
+
+func paintColor(gtx C, max image.Point, r int, color color.NRGBA) {
+	bounds := image.Rectangle{Max: max}
+	defer clip.RRect{Rect: bounds, SE: r, SW: r, NW: r, NE: r}.Push(gtx.Ops).Pop()
+
+	paint.ColorOp{Color: color}.Add(gtx.Ops)
+	paint.PaintOp{}.Add(gtx.Ops)
 }
 
 func paintGradient(gtx C, max image.Point, r int, color1, color2 color.NRGBA) {
@@ -169,7 +168,7 @@ func paintGradient(gtx C, max image.Point, r int, color1, color2 color.NRGBA) {
 
 func toFlex(children []layout.FlexChild, buttons ...*Button) []layout.FlexChild {
 	for _, b := range buttons {
-		b := b
+		//b := b
 		children = append(children, layout.Rigid(func(gtx C) D {
 			return b.Layout(gtx)
 		}))

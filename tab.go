@@ -2,35 +2,31 @@ package components
 
 import (
 	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"gioui.org/widget/material"
 	"github.com/maxazimi/v2ray-gio/ui/lang"
 	"github.com/maxazimi/v2ray-gio/ui/theme"
 	"github.com/maxazimi/v2ray-gio/ui/values"
 	"image"
 )
 
-type tabItem struct {
-	*Clickable
-	name string
+type TabItem struct {
+	*Button
+	Name string
 }
 
 type Tab struct {
+	TabItems      []TabItem
 	list          layout.List
-	tabItems      []tabItem
 	selectedIndex int
 	changed       bool
 }
 
-func NewTab(axis layout.Axis, items []string) *Tab {
+func NewTab(items []TabItem) *Tab {
 	t := &Tab{}
-	t.list.Axis = axis
 	for _, item := range items {
-		t.tabItems = append(t.tabItems, tabItem{
-			Clickable: NewClickable(false),
-			name:      item,
-		})
+		t.TabItems = append(t.TabItems, item)
 	}
 	return t
 }
@@ -40,7 +36,7 @@ func (t *Tab) Layout(gtx C) D {
 	th := theme.Current()
 	var selectedTabDims D
 
-	return t.list.Layout(gtx, len(t.tabItems), func(gtx C, i int) D {
+	return t.list.Layout(gtx, len(t.TabItems), func(gtx C, i int) D {
 		isSelectedTab := t.SelectedIndex() == i
 		return layout.Stack{Alignment: layout.Center}.Layout(gtx,
 			layout.Stacked(func(gtx C) D {
@@ -50,17 +46,25 @@ func (t *Tab) Layout(gtx C) D {
 					Bottom: values.DP8,
 				}.Layout(gtx, func(gtx C) D {
 					return layout.Center.Layout(gtx, func(gtx C) D {
-						item := t.tabItems[i]
-						return item.Layout(gtx, func(gtx C) D {
-							lbl := material.Label(th.Theme, values.TextSize16, lang.Str(item.name))
-							lbl.Color = th.GrayText1Color
+						item := t.TabItems[i]
+						item.Text = lang.Str(item.Name)
+						item.TextSize = values.TextSize16
+						if isSelectedTab {
+							item.Colors.TextColor = th.PrimaryColor
+						} else {
+							item.Colors.TextColor = th.GrayText1Color
+						}
 
-							if isSelectedTab {
-								lbl.Color = th.PrimaryColor
-								selectedTabDims = lbl.Layout(gtx)
-							}
-							return lbl.Layout(gtx)
-						})
+						c := op.Record(gtx.Ops)
+						dims := item.Layout(gtx)
+						m := c.Stop()
+
+						if isSelectedTab {
+							selectedTabDims = dims
+						}
+
+						m.Add(gtx.Ops)
+						return dims
 					})
 				})
 			}),
@@ -84,10 +88,12 @@ func (t *Tab) Layout(gtx C) D {
 }
 
 func (t *Tab) handleEvents(gtx C) {
-	for i, item := range t.tabItems {
+	for i, item := range t.TabItems {
 		if item.Clicked(gtx) {
 			if t.selectedIndex != i {
 				t.changed = true
+				t.TabItems[t.selectedIndex].Focused = false
+				item.Focused = true
 			}
 			t.selectedIndex = i
 		}
@@ -99,7 +105,7 @@ func (t *Tab) SelectedIndex() int {
 }
 
 func (t *Tab) SelectedTab() string {
-	return t.tabItems[t.selectedIndex].name
+	return t.TabItems[t.selectedIndex].Name
 }
 
 func (t *Tab) Changed() bool {
@@ -109,13 +115,15 @@ func (t *Tab) Changed() bool {
 }
 
 func (t *Tab) SetSelectedTab(tab string) {
-	for i, item := range t.tabItems {
-		if item.name == tab {
+	for i, item := range t.TabItems {
+		if item.Name == tab {
 			t.selectedIndex = i
 		}
 	}
 }
 
 func (t *Tab) SetSelectedIndex(index int) {
-	t.selectedIndex = index
+	if index < len(t.TabItems) {
+		t.selectedIndex = index
+	}
 }

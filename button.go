@@ -1,4 +1,4 @@
-// Inspired from https://github.com/g45t345rt/g45w/blob/master/components/button.go
+// Button inspired from https://github.com/g45t345rt/g45w/blob/master/components/button.go and modified further.
 
 package components
 
@@ -8,18 +8,13 @@ import (
 	"gioui.org/io/semantic"
 	"gioui.org/layout"
 	"gioui.org/op"
-	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/maxazimi/v2ray-gio/ui/anim"
 	"github.com/maxazimi/v2ray-gio/ui/instance"
 	"github.com/maxazimi/v2ray-gio/ui/theme"
 	"github.com/maxazimi/v2ray-gio/ui/values"
-	"github.com/tanema/gween"
-	"github.com/tanema/gween/ease"
-	"image"
 	"image/color"
 	"time"
 )
@@ -28,78 +23,6 @@ const (
 	ratio          float32 = 0.95
 	tooltipPadding         = 12
 )
-
-type ButtonAnimation struct {
-	clickable    *widget.Clickable
-	animIn       *anim.Animation
-	transFunc    anim.TransFunc
-	animOut      *anim.Animation
-	animClick    *anim.Animation
-	animLoading  *anim.Animation
-	transLoading anim.TransFunc
-}
-
-func NewButtonAnimationDefault() *ButtonAnimation {
-	return NewButtonAnimationScale(ratio)
-}
-
-func NewButtonAnimationScale(v float32) *ButtonAnimation {
-	animIn := anim.New(false, gween.NewSequence(gween.New(1, v, .1, ease.Linear)))
-	animOut := anim.New(false, gween.NewSequence(gween.New(v, 1, .1, ease.Linear)))
-
-	animClick := anim.New(false, gween.NewSequence(
-		gween.New(1, v*ratio, .1, ease.Linear),
-		gween.New(v*ratio, 1, .4, ease.OutBounce),
-	))
-
-	animLoading := anim.New(false, gween.NewSequence(gween.New(0, 1, 1, ease.Linear)))
-	animLoading.Sequence.SetLoop(-1)
-
-	return &ButtonAnimation{
-		clickable:    new(widget.Clickable),
-		animIn:       animIn,
-		transFunc:    anim.TransScale,
-		animOut:      animOut,
-		animClick:    animClick,
-		animLoading:  animLoading,
-		transLoading: anim.TransRotate,
-	}
-}
-
-func (b *ButtonAnimation) Hovered() bool {
-	return b.clickable.Hovered()
-}
-
-func (b *ButtonAnimation) Clicked(gtx C) bool {
-	return b.clickable.Clicked(gtx)
-}
-
-func (b *ButtonAnimation) Layout(gtx C, w layout.Widget) D {
-	return b.clickable.Layout(gtx, func(gtx C) D {
-		if b.animIn != nil {
-			value, finished := b.animIn.Update(gtx)
-			if !finished {
-				defer b.transFunc(gtx, value).Push(gtx.Ops).Pop()
-			}
-		}
-
-		if b.animOut != nil {
-			value, finished := b.animOut.Update(gtx)
-			if !finished {
-				defer b.transFunc(gtx, value).Push(gtx.Ops).Pop()
-			}
-		}
-
-		if b.animClick != nil {
-			value, finished := b.animClick.Update(gtx)
-			if !finished {
-				defer b.transFunc(gtx, value).Push(gtx.Ops).Pop()
-			}
-		}
-
-		return w(gtx)
-	})
-}
 
 type ButtonStyle struct {
 	Tag         interface{}
@@ -232,6 +155,10 @@ func (b *Button) handleEvents(gtx C) {
 	}
 }
 
+func (b *Button) Hovered() bool {
+	return b.Clickable.Hovered()
+}
+
 func (b *Button) Layout(gtx C) D {
 	th := theme.Current()
 
@@ -266,16 +193,7 @@ func (b *Button) Layout(gtx C) D {
 				dims = D{Size: gtx.Constraints.Max}
 			}
 
-			bounds := image.Rectangle{Max: dims.Size}
-			paint.FillShape(gtx.Ops, b.Colors.BackgroundColor,
-				clip.RRect{
-					Rect: bounds,
-					SE:   gtx.Dp(b.Radius),
-					SW:   gtx.Dp(b.Radius),
-					NE:   gtx.Dp(b.Radius),
-					NW:   gtx.Dp(b.Radius),
-				}.Op(gtx.Ops),
-			)
+			paintColor(gtx, dims.Size, gtx.Dp(b.Radius), b.Colors.BackgroundColor)
 			m.Add(gtx.Ops)
 
 			// Tooltip
