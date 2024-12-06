@@ -7,8 +7,8 @@ import (
 )
 
 const (
-	AppWidth  = unit.Dp(360)
-	AppHeight = unit.Dp(780)
+	AppWidth  = unit.Dp(1080)
+	AppHeight = unit.Dp(2166)
 
 	DP16  = unit.Dp(12)
 	DP18  = unit.Dp(12)

@@ -4,9 +4,11 @@ import (
 	"gioui.org/unit"
 )
 
-const (
-	StartMobileView = unit.Dp(600)
+var (
+	MaxMobileWidth = unit.Dp(600)
+)
 
+const (
 	DP0        = unit.Dp(0)
 	DP1        = unit.Dp(1)
 	DP2        = unit.Dp(2)
