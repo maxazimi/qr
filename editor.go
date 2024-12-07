@@ -134,7 +134,7 @@ func NewSearchEditor(editor *widget.Editor, hint string, icon *Icon) *Editor {
 func NewEditor(editor *widget.Editor, hint string) *Editor {
 	th := theme.Current()
 	errorLabel := material.Caption(th.Theme, "")
-	errorLabel.Color = theme.DangerColor
+	errorLabel.Color = th.RedColor
 
 	m := material.Editor(th.Theme, editor, hint)
 	m.Color = th.InputColors.TextColor
@@ -237,6 +237,10 @@ func (e *Editor) Text() string {
 	return e.Editor.Text()
 }
 
+func (e *Editor) SetText(s string) {
+	e.Editor.SetText(s)
+}
+
 func (e *Editor) Layout(gtx C) D {
 	if e.isFirstFocus {
 		e.isFirstFocus = false
@@ -287,7 +291,7 @@ func (e *Editor) layout(gtx C) D {
 
 	e.LineColor = th.Gray2Color
 	titleLabel.Color = th.GrayText3Color
-	errorLabel.Color = theme.DangerColor
+	errorLabel.Color = th.RedColor
 
 	if e.Editor.Len() > 0 && len(e.Hint) > 0 {
 		titleLabel.Text = e.Hint
@@ -311,16 +315,16 @@ func (e *Editor) layout(gtx C) D {
 
 	if e.IsRequired && !focused && e.Editor.Len() == 0 {
 		e.errorText = e.requiredErrorText
-		e.LineColor = theme.DangerColor
+		e.LineColor = th.RedColor
 	}
 
 	if e.errorText != "" {
-		e.LineColor = theme.DangerColor
-		titleLabel.Color = theme.DangerColor
+		titleLabel.Text = e.errorText
+		e.LineColor = th.RedColor
+		titleLabel.Color = e.LineColor
 	}
 
 	overLay := func(_ C) D { return D{} }
-	// TODO: fix it!
 	//if e.Editor.ReadOnly {
 	//	overLay = func(gtx C) D {
 	//		gtxCopy := gtx
@@ -535,7 +539,7 @@ func (re RestoreEditor) Layout(gtx C) D {
 	titleLabel := material.Body2(theme.Current().Theme, "")
 	errorLabel := material.Caption(th.Theme, "")
 	titleLabel.Color = th.GrayText3Color
-	errorLabel.Color = theme.DangerColor
+	errorLabel.Color = th.RedColor
 
 	width := int(gtx.Metric.PxPerDp * 2.0)
 	height := int(gtx.Metric.PxPerDp * float32(re.height))
@@ -643,5 +647,5 @@ func (l Line) Layout(gtx C) D {
 	defer clip.Rect(line).Push(gtx.Ops).Pop()
 	paint.Fill(gtx.Ops, l.Color)
 
-	return layout.Dimensions{Size: line.Max}
+	return D{Size: line.Max}
 }

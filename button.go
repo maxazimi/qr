@@ -96,11 +96,17 @@ func (b *Button) SetTipText(text string) {
 	})
 }
 
+func (b *Button) Hovered() bool {
+	if b.Disabled {
+		return false
+	}
+	return b.Clickable.Hovered()
+}
+
 func (b *Button) Clicked(gtx C) bool {
 	if b.Disabled {
 		return false
 	}
-
 	if b.Clickable.Clicked(gtx) {
 		if b.Animation.animClick != nil {
 			b.Animation.animClick.Reset().Start()
@@ -153,10 +159,6 @@ func (b *Button) handleEvents(gtx C) {
 			b.Animation.animIn.Reset()
 		}
 	}
-}
-
-func (b *Button) Hovered() bool {
-	return b.Clickable.Hovered()
 }
 
 func (b *Button) Layout(gtx C) D {
