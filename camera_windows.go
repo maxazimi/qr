@@ -70,32 +70,48 @@ static LRESULT CALLBACK capVideoStreamCallback(HWND hwnd, LPVIDEOHDR vhdr) {
 }
 
 static int webcam_open(int deviceId, int width, int height) {
-    _device = (CAM*)malloc(sizeof(CAM));
-    if (!_device) {
-        fprintf(stderr, "Failed to allocate memory for CAM structure\n");
-        return -1;
-    }
+  // Allocate memory for the CAM structure
+  _device = (CAM*) malloc(sizeof(CAM));
+  if (!_device) {
+    fprintf(stderr, "Failed to allocate memory for CAM structure\n");
+    return -1;
+  }
 
-    _device->hwnd = capCreateCaptureWindowA(NULL, WS_CHILD, 0, 0, 0, 0, NULL, 0);
-    if (!_device->hwnd) {
-        fprintf(stderr, "Failed to create capture window\n");
-        free(_device);
-        return -1;
-    }
+  // Create the capture window
+  _device->hwnd = capCreateCaptureWindowA("Capture Window",     // Window name
+                                          WS_CHILD,             // Window style
+                                          0, 0, width, height,  // x, y, width, height
+                                          GetDesktopWindow(),   // Parent window (set to desktop for testing)
+                                          0);                   // Window ID
 
-    _device->w = width;
-    _device->h = height;
+  if (!_device->hwnd) {
+    fprintf(stderr, "Failed to create capture window\n");
+    free(_device);
+    return -1;
+  }
 
-    _frame_size = width * height * 3;
-    _device->rgb = malloc(_frame_size);
-    if (!_device->rgb) {
-        fprintf(stderr, "Failed to allocate memory for RGB buffer\n");
-        DestroyWindow(_device->hwnd);
-        free(_device);
-        return -1;
-    }
+  // Set the dimensions and allocate memory for RGB buffer
+  _device->w = width;
+  _device->h = height;
+  _frame_size = width * height * 3;
+  _device->rgb = malloc(_frame_size);
+  if (!_device->rgb) {
+    fprintf(stderr, "Failed to allocate memory for RGB buffer\n");
+    DestroyWindow(_device->hwnd);
+    free(_device);
+    return -1;
+  }
 
-    return 0;
+  // Connect the capture window to the device
+  if (!capDriverConnect(_device->hwnd, deviceId)) {
+    fprintf(stderr, "Failed to connect to capture device\n");
+    DestroyWindow(_device->hwnd);
+    free(_device->rgb);
+    free(_device);
+    return -1;
+  }
+
+  return 0;
 }
 
 static int webcam_start() {
