@@ -60,13 +60,32 @@ static void YUYVToRGB24(int w, int h, unsigned char *src, unsigned char *dst) {
 extern void onFrameAvailableGo(void* data, int width, int height, int bytesPerPixel);
 
 static LRESULT CALLBACK capVideoStreamCallback(HWND hwnd, LPVIDEOHDR vhdr) {
+    fprintf(stderr, "Callback triggered\n");
+
     CAM *c = (CAM *)capGetUserData(hwnd);
+    if (!c) {
+        fprintf(stderr, "Failed to get user data\n");
+        return 0;
+    }
+
+    fprintf(stderr, "Callback running\n");
+
     if (c->bmi.bmiHeader.biCompression == FOURCC('Y', 'U', 'Y', '2')) {
         YUYVToRGB24(c->w, c->h, (unsigned char*)vhdr->lpData, (unsigned char*)c->rgb);
     }
 
     onFrameAvailableGo(c->rgb, c->w, c->h, 3);
-    return 0;
+    return (LRESULT)TRUE;
+}
+
+// Manual capture
+static BOOL captureFrame() {
+	printf("Frame!\n");
+    if (!capGrabFrameNoStop(_device->hwnd)) {
+        fprintf(stderr, "Failed to grab frame\n");
+        return FALSE;
+    }
+    return TRUE;
 }
 
 static int webcam_open(int deviceId, int width, int height) {
@@ -115,35 +134,47 @@ static int webcam_open(int deviceId, int width, int height) {
 }
 
 static int webcam_start() {
+    printf("Setting user data...\n");
     if (!capSetUserData(_device->hwnd, _device)) {
         fprintf(stderr, "Failed to set user data\n");
         return -1;
     }
 
+    printf("Connecting capture driver...\n");
     if (!capDriverConnect(_device->hwnd, 0)) {
         fprintf(stderr, "Failed to connect to driver\n");
         return -1;
     }
 
-    if (!capGetVideoFormat(_device->hwnd, &_device->bmi, sizeof(_device->bmi))) {
-        fprintf(stderr, "Failed to get video format\n");
-        return -1;
-    }
-
-    _device->bmi.bmiHeader.biWidth = _device->w;
-    _device->bmi.bmiHeader.biHeight = _device->h;
+    printf("Initializing BITMAPINFO structure...\n");
+    memset(&_device->bmi, 0, sizeof(_device->bmi));
+    _device->bmi.bmiHeader.biSize = sizeof(_device->bmi.bmiHeader);
+    _device->bmi.bmiHeader.biWidth = 1280; // Supported width
+    _device->bmi.bmiHeader.biHeight = 720; // Supported height
+    _device->bmi.bmiHeader.biPlanes = 1;
+    _device->bmi.bmiHeader.biBitCount = 16; // Supported bit count
+    _device->bmi.bmiHeader.biCompression = 844715353; // 'YUY2' compression
     _device->bmi.bmiHeader.biSizeImage = 0;
 
+    printf("Setting video format...\n");
     if (!capSetVideoFormat(_device->hwnd, &_device->bmi, sizeof(_device->bmi))) {
         fprintf(stderr, "Failed to set video format\n");
         return -1;
     }
 
+    printf("Setting frame callback...\n");
     if (!capSetCallbackOnFrame(_device->hwnd, capVideoStreamCallback)) {
         fprintf(stderr, "Failed to set frame callback\n");
         return -1;
     }
 
+    printf("Starting video stream...\n");
+    if (!capCaptureSequenceNoFile(_device->hwnd)) {
+       fprintf(stderr, "Failed to start video stream\n");
+       return -1;
+    }
+
+    printf("Video stream started\n");
     return 0;
 }
 
@@ -156,16 +187,44 @@ static int webcam_stop() {
 }
 
 static void webcam_delete() {
-    if (_device) {
-        if (_device->hwnd) {
-            DestroyWindow(_device->hwnd);
-        }
-        if (_device->rgb) {
-            free(_device->rgb);
-        }
-        free(_device);
-        _device = NULL;
+    if (!_device) {
+		return;
+	}
+	if (_device->hwnd) {
+		DestroyWindow(_device->hwnd);
+	}
+	if (_device->rgb) {
+		free(_device->rgb);
+	}
+	free(_device);
+	_device = NULL;
+}
+
+static void postTestMessage() {
+    PostMessage(_device->hwnd, WM_USER + 1, 0, 0); // Post a user-defined message
+}
+
+static HWND hwndTest;
+
+// Function to run the message loop
+static void runMessageLoop() {
+    MSG msg;
+	printf("Starting GetMessage()...\n");
+	PostMessage(hwndTest, WM_USER + 1, 0, 0); // Post a user-defined message
+    while (GetMessage(&msg, NULL, 0, 0)) {
+        printf("GetMessage()!\n");
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+
+		// Manually capture frame for testing
+		if (!captureFrame()) {
+			printf("Failed to capture frame\n");
+		}
     }
+}
+
+static void terminateMessageLoop() {
+    PostQuitMessage(0);  // Posts a WM_QUIT message to the message queue
 }
 
 */
@@ -174,6 +233,10 @@ import (
 	"fmt"
 	"log"
 	"unsafe"
+)
+
+var (
+	loopIsRunning = false
 )
 
 //export onFrameAvailableGo
@@ -202,13 +265,31 @@ func openCamera(id, width, height int) error {
 }
 
 func startCamera() error {
+	if loopIsRunning {
+		return fmt.Errorf("camera preview already running")
+	}
+
 	if C.webcam_start() != 0 {
 		return fmt.Errorf("failed to start camera")
 	}
+
+	loopIsRunning = true
+	go func() {
+		C.runMessageLoop()
+		loopIsRunning = false
+	}()
+	// Post a test message to ensure the message loop starts
+	C.postTestMessage()
 	return nil
 }
 
 func stopCamera() error {
+	defer func() {
+		if loopIsRunning {
+			C.terminateMessageLoop()
+			loopIsRunning = false
+		}
+	}()
 	if C.webcam_stop() != 0 {
 		return fmt.Errorf("failed to stop camera")
 	}
