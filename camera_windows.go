@@ -1,253 +1,285 @@
 package camera
 
 /*
-#cgo LDFLAGS: -lvfw32
+#cgo LDFLAGS: -lole32 -lmf -lmfplat -lmfuuid -lmfreadwrite
+
+#define COBJMACROS
 #include <windows.h>
-#include <vfw.h>
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+#include <mfobjects.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#define FOURCC(a, b, c, d) ((DWORD)(((d) << 24) | ((c) << 16) | ((b) << 8) | (a)))
+#define CHECK_HR(hr) if (FAILED(hr)) { fprintf(stderr, "Error: 0x%08X, at line %d\n", hr, __LINE__); return -1; }
 
-typedef struct {
-    HWND hwnd;
-    long w, h;
-    BITMAPINFO bmi;
-    void *rgb;
-} CAM;
+#define HI32(x) ((UINT32)(((x) >> 32) & 0xFFFFFFFF))
+#define LO32(x) ((UINT32)((x) & 0xFFFFFFFF))
 
-// Global device pointer
-static unsigned long _frame_size = 0;
-static CAM* _device = NULL;
-
-static void copyImage(uint8_t *dstBuf, void* srcBuf) {
-    memcpy(dstBuf, srcBuf, _frame_size);
-}
-
-static unsigned char clip(int i) {
-    if (i <= 0)
-        return 0;
-    if (i >= 255)
-        return 255;
-    return (unsigned char)i;
-}
-
-static void YUV444toRGB888(unsigned char y, unsigned char u, unsigned char v, unsigned char *dst) {
-    int C = y - 16;
-    int D = u - 128;
-    int E = v - 128;
-    *dst++ = clip((298 * C + 409 * E + 128) >> 8);
-    *dst++ = clip((298 * C - 100 * D - 208 * E + 128) >> 8);
-    *dst++ = clip((298 * C + 516 * D + 128) >> 8);
-}
-
-static void YUYVToRGB24(int w, int h, unsigned char *src, unsigned char *dst) {
-    int i;
-    unsigned char u, y1, v, y2;
-    for (i = 0; i < w * h; i += 2) {
-        y1 = *src++;
-        u = *src++;
-        y2 = *src++;
-        v = *src++;
-        YUV444toRGB888(y1, u, v, dst);
-        dst += 3;
-        YUV444toRGB888(y2, u, v, dst);
-        dst += 3;
-    }
-}
-
-// Forward declaration of the Go callback function
+// Declare the callback function
 extern void onFrameAvailableGo(void* data, int width, int height, int bytesPerPixel);
 
-static LRESULT CALLBACK capVideoStreamCallback(HWND hwnd, LPVIDEOHDR vhdr) {
-    fprintf(stderr, "Callback triggered\n");
+static IMFSourceReader *pReader_ = NULL;
+static UINT32 width_ = 0;
+static UINT32 height_ = 0;
+static GUID subtype_ = {0};  // Declare the subtype variable
+static uint8_t *rgbData_ = NULL;
 
-    CAM *c = (CAM *)capGetUserData(hwnd);
-    if (!c) {
-        fprintf(stderr, "Failed to get user data\n");
-        return 0;
+// Function to convert YUY2 to RGB24
+static void YUY2toRGB24(uint8_t *yuy2, uint8_t *rgb, int width, int height) {
+    for (int i = 0; i < width * height * 2; i += 4) {
+        uint8_t y0 = yuy2[i];
+        uint8_t u = yuy2[i + 1];
+        uint8_t y1 = yuy2[i + 2];
+        uint8_t v = yuy2[i + 3];
+
+        int c = y0 - 16;
+        int d = u - 128;
+        int e = v - 128;
+
+        rgb[(i / 2) * 3] = (uint8_t) (1.164 * c + 1.596 * e);
+        rgb[(i / 2) * 3 + 1] = (uint8_t) (1.164 * c - 0.392 * d - 0.813 * e);
+        rgb[(i / 2) * 3 + 2] = (uint8_t) (1.164 * c + 2.017 * d);
+
+        c = y1 - 16;
+
+        rgb[(i / 2 + 1) * 3] = (uint8_t) (1.164 * c + 1.596 * e);
+        rgb[(i / 2 + 1) * 3 + 1] = (uint8_t) (1.164 * c - 0.392 * d - 0.813 * e);
+        rgb[(i / 2 + 1) * 3 + 2] = (uint8_t) (1.164 * c + 2.017 * d);
     }
-
-    fprintf(stderr, "Callback running\n");
-
-    if (c->bmi.bmiHeader.biCompression == FOURCC('Y', 'U', 'Y', '2')) {
-        YUYVToRGB24(c->w, c->h, (unsigned char*)vhdr->lpData, (unsigned char*)c->rgb);
-    }
-
-    onFrameAvailableGo(c->rgb, c->w, c->h, 3);
-    return (LRESULT)TRUE;
-}
-
-// Manual capture
-static BOOL captureFrame() {
-	printf("Frame!\n");
-    if (!capGrabFrameNoStop(_device->hwnd)) {
-        fprintf(stderr, "Failed to grab frame\n");
-        return FALSE;
-    }
-    return TRUE;
 }
 
 static int webcam_open(int deviceId, int width, int height) {
-  // Allocate memory for the CAM structure
-  _device = (CAM*) malloc(sizeof(CAM));
-  if (!_device) {
-    fprintf(stderr, "Failed to allocate memory for CAM structure\n");
-    return -1;
-  }
+    HRESULT hr;
+    IMFActivate **ppDevices = NULL;
+    IMFAttributes *pAttributes = NULL;
+    UINT32 count = 0;
 
-  // Create the capture window
-  _device->hwnd = capCreateCaptureWindowA("Capture Window",     // Window name
-                                          WS_CHILD,             // Window style
-                                          0, 0, width, height,  // x, y, width, height
-                                          GetDesktopWindow(),   // Parent window (set to desktop for testing)
-                                          0);                   // Window ID
+    width_ = width;
+    height_ = height;
 
-  if (!_device->hwnd) {
-    fprintf(stderr, "Failed to create capture window\n");
-    free(_device);
-    return -1;
-  }
+    hr = MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET);
+    CHECK_HR(hr);
 
-  // Set the dimensions and allocate memory for RGB buffer
-  _device->w = width;
-  _device->h = height;
-  _frame_size = width * height * 3;
-  _device->rgb = malloc(_frame_size);
-  if (!_device->rgb) {
-    fprintf(stderr, "Failed to allocate memory for RGB buffer\n");
-    DestroyWindow(_device->hwnd);
-    free(_device);
-    return -1;
-  }
+    hr = MFCreateAttributes(&pAttributes, 1);
+    CHECK_HR(hr);
 
-  // Connect the capture window to the device
-  if (!capDriverConnect(_device->hwnd, deviceId)) {
-    fprintf(stderr, "Failed to connect to capture device\n");
-    DestroyWindow(_device->hwnd);
-    free(_device->rgb);
-    free(_device);
-    return -1;
-  }
+    hr = IMFAttributes_SetGUID(pAttributes, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE, &MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID);
+    CHECK_HR(hr);
 
-  return 0;
+    hr = MFEnumDeviceSources(pAttributes, &ppDevices, &count);
+    CHECK_HR(hr);
+
+    if (deviceId >= (int)count) {
+        fprintf(stderr, "Error: Device ID %d out of range, %u devices found\n", deviceId, count);
+        IMFAttributes_Release(pAttributes);
+        CoTaskMemFree(ppDevices);
+        return -1;
+    }
+
+    IMFMediaSource *pSource = NULL;
+    hr = IMFActivate_ActivateObject(ppDevices[deviceId], &IID_IMFMediaSource, (void**)&pSource);
+    CHECK_HR(hr);
+
+    hr = MFCreateSourceReaderFromMediaSource(pSource, NULL, &pReader_);
+    CHECK_HR(hr);
+
+    IMFMediaSource_Release(pSource);
+
+    IMFAttributes_Release(pAttributes);
+    for (UINT32 i = 0; i < count; i++) {
+        IMFActivate_Release(ppDevices[i]);
+    }
+    CoTaskMemFree(ppDevices);
+
+	rgbData_ = (uint8_t*) malloc(width * height * 4);
+    //printf("Webcam opened successfully.\n");
+    return 0;
+}
+
+// Function to print GUID
+static void PrintGUID(const GUID *guid) {
+    WCHAR guidString[39] = {0};
+    StringFromGUID2(guid, guidString, sizeof(guidString) / sizeof(WCHAR));
+    wprintf(L"%ls", guidString);
 }
 
 static int webcam_start() {
-    printf("Setting user data...\n");
-    if (!capSetUserData(_device->hwnd, _device)) {
-        fprintf(stderr, "Failed to set user data\n");
+    HRESULT hr;
+    IMFMediaType *pNativeType = NULL;
+    UINT32 i = 0;
+    UINT32 bestWidth = 0, bestHeight = 0;
+
+    while (SUCCEEDED(hr = IMFSourceReader_GetNativeMediaType(pReader_, MF_SOURCE_READER_FIRST_VIDEO_STREAM, i, &pNativeType))) {
+        GUID majorType = {0};
+        hr = IMFMediaType_GetGUID(pNativeType, &MF_MT_MAJOR_TYPE, &majorType);
+        if (FAILED(hr)) {
+            IMFMediaType_Release(pNativeType);
+            CHECK_HR(hr);
+        }
+
+        if (IsEqualGUID(&majorType, &MFMediaType_Video)) {
+            UINT64 frameSize = 0;
+            hr = IMFMediaType_GetUINT64(pNativeType, &MF_MT_FRAME_SIZE, &frameSize);
+            CHECK_HR(hr);
+
+            UINT32 width = HI32(frameSize);
+            UINT32 height = LO32(frameSize);
+
+            if (width == width_ && height == height_) {
+                hr = IMFMediaType_GetGUID(pNativeType, &MF_MT_SUBTYPE, &subtype_);
+                CHECK_HR(hr);
+
+                hr = IMFSourceReader_SetCurrentMediaType(pReader_, MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, pNativeType);
+                IMFMediaType_Release(pNativeType);
+                CHECK_HR(hr);
+                //printf("Selected resolution: %ux%u\n", width, height);
+                //printf("Selected video subtype: ");
+                //PrintGUID(&subtype_);
+                return 0;
+            }
+
+            if ((bestWidth == 0 && bestHeight == 0) || (width <= width_ && height <= height_)) {
+                bestWidth = width;
+                bestHeight = height;
+                hr = IMFMediaType_GetGUID(pNativeType, &MF_MT_SUBTYPE, &subtype_);
+                CHECK_HR(hr);
+            }
+        }
+
+        IMFMediaType_Release(pNativeType);
+        i++;
+    }
+
+    if (bestWidth == 0 || bestHeight == 0) {
+        fprintf(stderr, "Failed to find a suitable media type.\n");
         return -1;
     }
 
-    printf("Connecting capture driver...\n");
-    if (!capDriverConnect(_device->hwnd, 0)) {
-        fprintf(stderr, "Failed to connect to driver\n");
-        return -1;
+    width_ = bestWidth;
+    height_ = bestHeight;
+    hr = IMFSourceReader_SetCurrentMediaType(pReader_, MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, pNativeType);
+    CHECK_HR(hr);
+
+    //printf("Selected resolution: %ux%u\n", width_, height_);
+    //printf("Selected video subtype: ");
+    //PrintGUID(&subtype_);
+    //printf("\n");
+
+    return 0;
+}
+
+static int capture_frame() {
+    HRESULT hr;
+    IMFSample *pSample = NULL;
+    DWORD streamIndex, flags;
+    LONGLONG timestamp;
+
+    hr = IMFSourceReader_ReadSample(pReader_, MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0, &streamIndex, &flags, &timestamp, &pSample);
+    CHECK_HR(hr);
+
+    if (!pSample) {
+		return -1;
     }
 
-    printf("Initializing BITMAPINFO structure...\n");
-    memset(&_device->bmi, 0, sizeof(_device->bmi));
-    _device->bmi.bmiHeader.biSize = sizeof(_device->bmi.bmiHeader);
-    _device->bmi.bmiHeader.biWidth = 1280; // Supported width
-    _device->bmi.bmiHeader.biHeight = 720; // Supported height
-    _device->bmi.bmiHeader.biPlanes = 1;
-    _device->bmi.bmiHeader.biBitCount = 16; // Supported bit count
-    _device->bmi.bmiHeader.biCompression = 844715353; // 'YUY2' compression
-    _device->bmi.bmiHeader.biSizeImage = 0;
+	IMFMediaBuffer *pBuffer = NULL;
+	hr = IMFSample_ConvertToContiguousBuffer(pSample, &pBuffer);
+	CHECK_HR(hr);
 
-    printf("Setting video format...\n");
-    if (!capSetVideoFormat(_device->hwnd, &_device->bmi, sizeof(_device->bmi))) {
-        fprintf(stderr, "Failed to set video format\n");
-        return -1;
-    }
+	BYTE *pData = NULL;
+	DWORD maxLength = 0, currentLength = 0;
+	hr = IMFMediaBuffer_Lock(pBuffer, &pData, &maxLength, &currentLength);
+	CHECK_HR(hr);
 
-    printf("Setting frame callback...\n");
-    if (!capSetCallbackOnFrame(_device->hwnd, capVideoStreamCallback)) {
-        fprintf(stderr, "Failed to set frame callback\n");
-        return -1;
-    }
+	if (IsEqualGUID(&subtype_, &MFVideoFormat_YUY2)) {
+		// Handle YUY2 format appropriately
+		if (rgbData_ == NULL) {
+			fprintf(stderr, "Failed to allocate memory for RGB data\n");
+			IMFMediaBuffer_Unlock(pBuffer);
+			IMFMediaBuffer_Release(pBuffer);
+			IMFSample_Release(pSample);
+			return -1;
+		}
 
-    printf("Starting video stream...\n");
-    if (!capCaptureSequenceNoFile(_device->hwnd)) {
-       fprintf(stderr, "Failed to start video stream\n");
-       return -1;
-    }
+		YUY2toRGB24(pData, rgbData_, width_, height_);
+		onFrameAvailableGo(rgbData_, width_, height_, 3);
+	} else if (IsEqualGUID(&subtype_, &MFVideoFormat_RGB24)) {
+		// Handling RGB24 format
+		if (maxLength < width_ * height_ * 3 || currentLength < width_ * height_ * 3) {
+			fprintf(stderr, "Buffer size is too small for the expected frame size\n");
+		} else {
+			onFrameAvailableGo(pData, width_, height_, 3);
+		}
+	} else {
+		// Handling other formats
+	}
 
-    printf("Video stream started\n");
+	hr = IMFMediaBuffer_Unlock(pBuffer);
+	IMFMediaBuffer_Release(pBuffer);
+	IMFSample_Release(pSample);
+	CHECK_HR(hr);
+
     return 0;
 }
 
 static int webcam_stop() {
-    if (!capDriverDisconnect(_device->hwnd)) {
-        fprintf(stderr, "Failed to disconnect driver\n");
-        return -1;
+    if (pReader_) {
+        IMFSourceReader_Release(pReader_);
+        pReader_ = NULL;
     }
+    MFShutdown();
     return 0;
 }
 
 static void webcam_delete() {
-    if (!_device) {
-		return;
-	}
-	if (_device->hwnd) {
-		DestroyWindow(_device->hwnd);
-	}
-	if (_device->rgb) {
-		free(_device->rgb);
-	}
-	free(_device);
-	_device = NULL;
-}
-
-static void postTestMessage() {
-    PostMessage(_device->hwnd, WM_USER + 1, 0, 0); // Post a user-defined message
-}
-
-static HWND hwndTest;
-
-// Function to run the message loop
-static void runMessageLoop() {
-    MSG msg;
-	printf("Starting GetMessage()...\n");
-	PostMessage(hwndTest, WM_USER + 1, 0, 0); // Post a user-defined message
-    while (GetMessage(&msg, NULL, 0, 0)) {
-        printf("GetMessage()!\n");
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-
-		// Manually capture frame for testing
-		if (!captureFrame()) {
-			printf("Failed to capture frame\n");
-		}
+    if (pReader_) {
+        IMFSourceReader_Release(pReader_);
+        pReader_ = NULL;
     }
+	MFShutdown();
+	free(rgbData_);
+	rgbData_ = NULL;
 }
 
-static void terminateMessageLoop() {
-    PostQuitMessage(0);  // Posts a WM_QUIT message to the message queue
+static void copyImage(uint8_t *dstBuf, void* srcBuf, size_t frame_size) {
+    memcpy(dstBuf, srcBuf, frame_size);
 }
 
 */
 import "C"
 import (
 	"fmt"
-	"log"
 	"unsafe"
 )
 
 var (
-	loopIsRunning = false
+	running = false
 )
+
+func startCapture() {
+	if running {
+		return
+	}
+
+	running = true
+	go func() {
+		for running {
+			C.capture_frame()
+		}
+		running = false
+	}()
+}
 
 //export onFrameAvailableGo
 func onFrameAvailableGo(data unsafe.Pointer, width, height, bytesPerPixel C.int) {
-	log.Println("Frame!")
+	frameSize := int(width) * int(height) * int(bytesPerPixel)
 	go func() {
-		buf := make([]byte, width*height*bytesPerPixel)
-		C.copyImage((*C.uint8_t)(unsafe.Pointer(&buf[0])), data)
+		buf := make([]byte, frameSize)
+		C.copyImage((*C.uint8_t)(unsafe.Pointer(&buf[0])), data, C.size_t(frameSize))
 
 		// Convert the buffer to an image.RGBA
-		rgba := convertBGRAToRGBA(buf, int(width), int(height))
+		rgba := convertRGB24ToRGBA(buf, int(width), int(height))
 
 		select {
 		case frameBufferChan <- rgba:
@@ -265,31 +297,16 @@ func openCamera(id, width, height int) error {
 }
 
 func startCamera() error {
-	if loopIsRunning {
-		return fmt.Errorf("camera preview already running")
-	}
-
 	if C.webcam_start() != 0 {
 		return fmt.Errorf("failed to start camera")
 	}
 
-	loopIsRunning = true
-	go func() {
-		C.runMessageLoop()
-		loopIsRunning = false
-	}()
-	// Post a test message to ensure the message loop starts
-	C.postTestMessage()
+	startCapture()
 	return nil
 }
 
 func stopCamera() error {
-	defer func() {
-		if loopIsRunning {
-			C.terminateMessageLoop()
-			loopIsRunning = false
-		}
-	}()
+	running = false
 	if C.webcam_stop() != 0 {
 		return fmt.Errorf("failed to stop camera")
 	}

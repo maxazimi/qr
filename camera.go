@@ -4,6 +4,7 @@ import "C"
 import (
 	"fmt"
 	"image"
+	"image/color"
 )
 
 var (
@@ -72,6 +73,22 @@ func Close() {
 
 func GetCameraFrameChan() <-chan *image.RGBA {
 	return frameBufferChan
+}
+
+func convertRGB24ToRGBA(rgbBuffer []byte, width, height int) *image.RGBA {
+	rgba := image.NewRGBA(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			i := (y*width + x) * 3
+			rgba.Set(x, y, color.RGBA{
+				R: rgbBuffer[i],
+				G: rgbBuffer[i+1],
+				B: rgbBuffer[i+2],
+				A: 255,
+			})
+		}
+	}
+	return rgba
 }
 
 func convertBGRAToRGBA(rgbBuffer []byte, width, height int) *image.RGBA {
