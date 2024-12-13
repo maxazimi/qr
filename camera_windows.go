@@ -17,13 +17,13 @@ package camera
 #define HI32(x) ((UINT32)(((x) >> 32) & 0xFFFFFFFF))
 #define LO32(x) ((UINT32)((x) & 0xFFFFFFFF))
 
-// Declare the callback function
+// Forward declaration for the callback function
 extern void onFrameAvailableGo(void* data, int width, int height, int bytesPerPixel);
 
 static IMFSourceReader *pReader_ = NULL;
 static UINT32 width_ = 0;
 static UINT32 height_ = 0;
-static GUID subtype_ = {0};  // Declare the subtype variable
+static GUID subtype_ = {0};
 static uint8_t *rgbData_ = NULL;
 
 // Function to convert YUY2 to RGB24
@@ -34,19 +34,26 @@ static void YUY2toRGB24(uint8_t *yuy2, uint8_t *rgb, int width, int height) {
         uint8_t y1 = yuy2[i + 2];
         uint8_t v = yuy2[i + 3];
 
-        int c = y0 - 16;
+        int c0 = y0 - 16;
+        int c1 = y1 - 16;
         int d = u - 128;
         int e = v - 128;
 
-        rgb[(i / 2) * 3] = (uint8_t) (1.164 * c + 1.596 * e);
-        rgb[(i / 2) * 3 + 1] = (uint8_t) (1.164 * c - 0.392 * d - 0.813 * e);
-        rgb[(i / 2) * 3 + 2] = (uint8_t) (1.164 * c + 2.017 * d);
+        int r0 = (298 * c0 + 409 * e + 128) >> 8;
+        int g0 = (298 * c0 - 100 * d - 208 * e + 128) >> 8;
+        int b0 = (298 * c0 + 516 * d + 128) >> 8;
 
-        c = y1 - 16;
+        int r1 = (298 * c1 + 409 * e + 128) >> 8;
+        int g1 = (298 * c1 - 100 * d - 208 * e + 128) >> 8;
+        int b1 = (298 * c1 + 516 * d + 128) >> 8;
 
-        rgb[(i / 2 + 1) * 3] = (uint8_t) (1.164 * c + 1.596 * e);
-        rgb[(i / 2 + 1) * 3 + 1] = (uint8_t) (1.164 * c - 0.392 * d - 0.813 * e);
-        rgb[(i / 2 + 1) * 3 + 2] = (uint8_t) (1.164 * c + 2.017 * d);
+        rgb[(i / 2) * 3]     = (uint8_t) (r0 < 0 ? 0 : (r0 > 255 ? 255 : r0));
+        rgb[(i / 2) * 3 + 1] = (uint8_t) (g0 < 0 ? 0 : (g0 > 255 ? 255 : g0));
+        rgb[(i / 2) * 3 + 2] = (uint8_t) (b0 < 0 ? 0 : (b0 > 255 ? 255 : b0));
+
+        rgb[(i / 2 + 1) * 3]     = (uint8_t) (r1 < 0 ? 0 : (r1 > 255 ? 255 : r1));
+        rgb[(i / 2 + 1) * 3 + 1] = (uint8_t) (g1 < 0 ? 0 : (g1 > 255 ? 255 : g1));
+        rgb[(i / 2 + 1) * 3 + 2] = (uint8_t) (b1 < 0 ? 0 : (b1 > 255 ? 255 : b1));
     }
 }
 
@@ -93,7 +100,6 @@ static int webcam_open(int deviceId, int width, int height) {
     }
     CoTaskMemFree(ppDevices);
 
-	rgbData_ = (uint8_t*) malloc(width * height * 4);
     //printf("Webcam opened successfully.\n");
     return 0;
 }
@@ -105,46 +111,81 @@ static void PrintGUID(const GUID *guid) {
     wprintf(L"%ls", guidString);
 }
 
+static int set_media_type(UINT32 width, UINT32 height, GUID subtype) {
+    IMFMediaType *pType = NULL;
+    HRESULT hr = MFCreateMediaType(&pType);
+    CHECK_HR(hr);
+
+    hr = IMFMediaType_SetGUID(pType, &MF_MT_MAJOR_TYPE, &MFMediaType_Video);
+    CHECK_HR(hr);
+
+    hr = IMFMediaType_SetGUID(pType, &MF_MT_SUBTYPE, &subtype);
+    CHECK_HR(hr);
+
+    UINT64 frameSize = ((UINT64)width << 32) | height;
+    hr = IMFAttributes_SetUINT64(pType, &MF_MT_FRAME_SIZE, frameSize);
+    CHECK_HR(hr);
+
+    hr = IMFSourceReader_SetCurrentMediaType(pReader_, MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, pType);
+    if (FAILED(hr)) {
+        wprintf(L"Failed to set media type: 0x%X\n", hr);
+        IMFMediaType_Release(pType);
+        return hr;
+    }
+
+    IMFMediaType_Release(pType);
+    width_ = width;
+    height_ = height;
+    subtype_ = subtype;
+
+    if (!rgbData_) {
+        rgbData_ = (uint8_t*) malloc(width * height * 4);
+    }
+
+    return 0;
+}
+
 static int webcam_start() {
     HRESULT hr;
     IMFMediaType *pNativeType = NULL;
     UINT32 i = 0;
-    UINT32 bestWidth = 0, bestHeight = 0;
 
     while (SUCCEEDED(hr = IMFSourceReader_GetNativeMediaType(pReader_, MF_SOURCE_READER_FIRST_VIDEO_STREAM, i, &pNativeType))) {
         GUID majorType = {0};
         hr = IMFMediaType_GetGUID(pNativeType, &MF_MT_MAJOR_TYPE, &majorType);
-        if (FAILED(hr)) {
+        CHECK_HR(hr);
+
+        if (!IsEqualGUID(&majorType, &MFMediaType_Video)) {
             IMFMediaType_Release(pNativeType);
-            CHECK_HR(hr);
+            i++;
+            continue;
         }
 
-        if (IsEqualGUID(&majorType, &MFMediaType_Video)) {
-            UINT64 frameSize = 0;
-            hr = IMFMediaType_GetUINT64(pNativeType, &MF_MT_FRAME_SIZE, &frameSize);
-            CHECK_HR(hr);
+        UINT64 frameSize = 0;
+        hr = IMFMediaType_GetUINT64(pNativeType, &MF_MT_FRAME_SIZE, &frameSize);
+        CHECK_HR(hr);
 
-            UINT32 width = HI32(frameSize);
-            UINT32 height = LO32(frameSize);
+        UINT32 width = HI32(frameSize);
+        UINT32 height = LO32(frameSize);
 
-            if (width == width_ && height == height_) {
-                hr = IMFMediaType_GetGUID(pNativeType, &MF_MT_SUBTYPE, &subtype_);
+        GUID subtype;
+        hr = IMFMediaType_GetGUID(pNativeType, &MF_MT_SUBTYPE, &subtype);
+        CHECK_HR(hr);
+
+        WCHAR guidString[39] = {0};
+        StringFromGUID2(&subtype, guidString, sizeof(guidString) / sizeof(WCHAR));
+        // wprintf(L"Supported resolution: %ux%u, subtype: %ls\n", width, height, guidString);
+
+        if ((width == width_ && height == height_) || (width <= width_ && height <= height_)) {
+            if (SUCCEEDED(IMFSourceReader_SetCurrentMediaType(pReader_, MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, pNativeType))) {
+                hr = set_media_type(width, height, subtype);
                 CHECK_HR(hr);
-
-                hr = IMFSourceReader_SetCurrentMediaType(pReader_, MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, pNativeType);
                 IMFMediaType_Release(pNativeType);
-                CHECK_HR(hr);
-                //printf("Selected resolution: %ux%u\n", width, height);
-                //printf("Selected video subtype: ");
-                //PrintGUID(&subtype_);
+                // printf("Selected resolution: %ux%u\n", width_, height_);
+                // printf("Selected video subtype: ");
+                // PrintGUID(&subtype_);
+                // printf("\n");
                 return 0;
-            }
-
-            if ((bestWidth == 0 && bestHeight == 0) || (width <= width_ && height <= height_)) {
-                bestWidth = width;
-                bestHeight = height;
-                hr = IMFMediaType_GetGUID(pNativeType, &MF_MT_SUBTYPE, &subtype_);
-                CHECK_HR(hr);
             }
         }
 
@@ -152,20 +193,14 @@ static int webcam_start() {
         i++;
     }
 
-    if (bestWidth == 0 || bestHeight == 0) {
-        fprintf(stderr, "Failed to find a suitable media type.\n");
-        return -1;
-    }
-
-    width_ = bestWidth;
-    height_ = bestHeight;
-    hr = IMFSourceReader_SetCurrentMediaType(pReader_, MF_SOURCE_READER_FIRST_VIDEO_STREAM, NULL, pNativeType);
+    // Fallback to manually setting 1280x720 if no suitable type found
+    hr = set_media_type(1280, 720, MFVideoFormat_YUY2);  // Change to RGB24 if preferred
     CHECK_HR(hr);
 
-    //printf("Selected resolution: %ux%u\n", width_, height_);
-    //printf("Selected video subtype: ");
-    //PrintGUID(&subtype_);
-    //printf("\n");
+    // printf("Fallback resolution: %ux%u\n", width_, height_);
+    // printf("Selected video subtype: ");
+    // PrintGUID(&subtype_);
+    // printf("\n");
 
     return 0;
 }
@@ -228,18 +263,16 @@ static int webcam_stop() {
         IMFSourceReader_Release(pReader_);
         pReader_ = NULL;
     }
-    MFShutdown();
+
+	MFShutdown();
     return 0;
 }
 
 static void webcam_delete() {
-    if (pReader_) {
-        IMFSourceReader_Release(pReader_);
-        pReader_ = NULL;
+    if (rgbData_) {
+        free(rgbData_);
+	    rgbData_ = NULL;
     }
-	MFShutdown();
-	free(rgbData_);
-	rgbData_ = NULL;
 }
 
 static void copyImage(uint8_t *dstBuf, void* srcBuf, size_t frame_size) {
@@ -279,7 +312,7 @@ func onFrameAvailableGo(data unsafe.Pointer, width, height, bytesPerPixel C.int)
 		C.copyImage((*C.uint8_t)(unsafe.Pointer(&buf[0])), data, C.size_t(frameSize))
 
 		// Convert the buffer to an image.RGBA
-		rgba := convertRGB24ToRGBA(buf, int(width), int(height))
+		rgba := convertAndMirrorRGB24ToRGBA(buf, int(width), int(height))
 
 		select {
 		case frameBufferChan <- rgba:

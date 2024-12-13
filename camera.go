@@ -1,6 +1,5 @@
 package camera
 
-import "C"
 import (
 	"fmt"
 	"image"
@@ -69,6 +68,8 @@ func Close() {
 
 	opened = false
 	closeCamera()
+	//close(frameBufferChan)
+	//log.Println("close(frameBufferChan)")
 }
 
 func GetCameraFrameChan() <-chan *image.RGBA {
@@ -114,4 +115,22 @@ func convertBGRAToRGBA(rgbBuffer []byte, width, height int) *image.RGBA {
 	}
 
 	return rgbaImage
+}
+
+// Function to convert and mirror RGB24 to RGBA
+func convertAndMirrorRGB24ToRGBA(rgbBuffer []byte, width, height int) *image.RGBA {
+	rgba := image.NewRGBA(image.Rect(0, 0, width, height))
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
+			originalIndex := (y*width + x) * 3
+			mirroredX := width - 1 - x
+			rgba.Set(mirroredX, y, color.RGBA{
+				R: rgbBuffer[originalIndex],
+				G: rgbBuffer[originalIndex+1],
+				B: rgbBuffer[originalIndex+2],
+				A: 255,
+			})
+		}
+	}
+	return rgba
 }
