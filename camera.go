@@ -116,7 +116,7 @@ func convertBGRAToRGBA(rgbBuffer []byte, width, height int) *image.RGBA {
 	return rgbaImage
 }
 
-// Function to convert and mirror RGB24 to RGBA
+// convertAndMirrorRGB24ToRGBA convert and mirror RGB24 to RGBA
 func convertAndMirrorRGB24ToRGBA(rgbBuffer []byte, width, height int) *image.RGBA {
 	rgba := image.NewRGBA(image.Rect(0, 0, width, height))
 	for y := 0; y < height; y++ {

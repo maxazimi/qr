@@ -8,12 +8,8 @@ package camera
 // Global device pointer
 static webcam_device_t* _device = NULL;
 
-static inline uint32_t webcam_format_size() {
-	return (uint32_t)(_device->width) * (uint32_t)(_device->height) * 4;
-}
-
-static void copyImage(uint8_t *dstBuf, void* srcBuf) {
-	memcpy(dstBuf, srcBuf, webcam_format_size());
+static inline size_t webcam_format_size() {
+	return (size_t)(_device->width) * (uint32_t)(_device->height) * 4;
 }
 
 // Forward declaration of the Go callback function
@@ -112,8 +108,9 @@ import (
 //export onFrameAvailableGo
 func onFrameAvailableGo(data unsafe.Pointer, w, h C.int) {
 	go func() {
-		buf := make([]byte, C.webcam_format_size())
-		C.copyImage((*C.uint8_t)(unsafe.Pointer(&buf[0])), data)
+		size := C.webcam_format_size()
+		buf := make([]byte, size)
+		C.copyImage((*C.uint8_t)(unsafe.Pointer(&buf[0])), data, size)
 
 		// Convert the buffer to an image.RGBA
 		rgba := convertBGRAToRGBA(buf, int(w), int(h))

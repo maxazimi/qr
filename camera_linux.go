@@ -4,14 +4,7 @@ package camera
 
 /*
 #cgo LDFLAGS: -lv4l2
-
-#include <stdint.h>
 #include "camera_linux.c"
-
-static void copyImage(uint8_t *dstBuf, void* srcBuf, size_t frame_size) {
-    memcpy(dstBuf, srcBuf, frame_size);
-}
-
 */
 import "C"
 import (
@@ -44,7 +37,7 @@ func onFrameAvailableGo(data unsafe.Pointer, width, height, bytesPerPixel C.int)
 	C.copyImage((*C.uint8_t)(unsafe.Pointer(&buf[0])), data, C.size_t(frameSize))
 
 	// Convert the buffer to an image.RGBA
-	rgba := convertRGB24ToRGBA(buf, int(width), int(height))
+	rgba := convertAndMirrorRGB24ToRGBA(buf, int(width), int(height))
 
 	select {
 	case frameBufferChan <- rgba:
@@ -54,7 +47,7 @@ func onFrameAvailableGo(data unsafe.Pointer, width, height, bytesPerPixel C.int)
 }
 
 func openCamera(id, width, height int) error {
-	if C.webcam_open(C.int(width), C.int(height), 10) != 0 {
+	if C.webcam_open(C.int(id), C.int(width), C.int(height), 30) != 0 {
 		return fmt.Errorf("failed to initialize camera")
 	}
 	return nil

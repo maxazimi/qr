@@ -1,6 +1,7 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
+#include <string.h>
 #include <stdint.h>
 
 struct _webcam_device;
@@ -17,6 +18,10 @@ struct _webcam_device {
 	void* stream;
 	webcam_callback_t callback;
 };
+
+static inline void copyImage(uint8_t *dstBuf, void* srcBuf, size_t frame_size) {
+    memcpy(dstBuf, srcBuf, frame_size);
+}
 
 // Function to convert YUY2 to RGB24
 static void YUY2toRGB24(uint8_t *yuy2, uint8_t *rgb, int width, int height) {
