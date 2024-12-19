@@ -21,7 +21,7 @@ func Open(id, width, height int) error {
 		return err
 	}
 
-	frameBufferChan = make(chan *image.RGBA, 10)
+	frameBufferChan = make(chan *image.RGBA, 1)
 	opened = true
 	return nil
 }
@@ -68,8 +68,7 @@ func Close() {
 
 	opened = false
 	closeCamera()
-	//close(frameBufferChan)
-	//log.Println("close(frameBufferChan)")
+	close(frameBufferChan)
 }
 
 func GetCameraFrameChan() <-chan *image.RGBA {
