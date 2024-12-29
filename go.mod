@@ -4,6 +4,7 @@ go 1.21
 
 require (
 	gioui.org v0.7.1
+	github.com/makiuchi-d/gozxing v0.1.1
 	github.com/rapidloop/skv v0.0.0-20180909015525-9def2caac4cc
 	github.com/tanema/gween v0.0.0-20221212145351-621cc8a459d1
 	golang.org/x/exp/shiny v0.0.0-20240707233637-46b078467d37
@@ -18,4 +19,5 @@ require (
 	golang.org/x/exp v0.0.0-20240707233637-46b078467d37 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
