@@ -5,7 +5,7 @@ import (
 	"gioui.org/op"
 	"gioui.org/unit"
 	"gioui.org/widget"
-	"github.com/maxazimi/v2ray-gio/ui/theme"
+	"github.com/maxazimi/qr/ui/theme"
 )
 
 type Tooltip struct {

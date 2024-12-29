@@ -3,7 +3,7 @@ package components
 import (
 	"gioui.org/layout"
 	"gioui.org/widget"
-	"github.com/maxazimi/v2ray-gio/ui/anim"
+	"github.com/maxazimi/qr/ui/anim"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 )

@@ -7,8 +7,8 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/maxazimi/v2ray-gio/assets"
-	"github.com/maxazimi/v2ray-gio/ui/theme"
+	"github.com/maxazimi/qr/assets"
+	"github.com/maxazimi/qr/ui/theme"
 )
 
 type NavItem struct {

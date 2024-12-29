@@ -8,8 +8,8 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/maxazimi/v2ray-gio/ui/instance"
-	"github.com/maxazimi/v2ray-gio/ui/theme"
+	"github.com/maxazimi/qr/ui/instance"
+	"github.com/maxazimi/qr/ui/theme"
 	"image/color"
 	"time"
 )

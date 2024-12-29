@@ -6,7 +6,7 @@ import (
 	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
-	"github.com/maxazimi/v2ray-gio/ui/theme"
+	"github.com/maxazimi/qr/ui/theme"
 	"image"
 	"image/color"
 )

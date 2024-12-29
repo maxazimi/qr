@@ -1,17 +1,16 @@
 package theme
 
 import (
+	"gioui.org/font/gofont"
 	"gioui.org/layout"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/text"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/maxazimi/v2ray-gio/assets"
-	"github.com/maxazimi/v2ray-gio/config"
+	"github.com/maxazimi/qr/config"
 	"image"
 	"image/color"
-	"log"
 	"strings"
 )
 
@@ -33,7 +32,7 @@ var (
 )
 
 func init() {
-	th.Shaper = text.NewShaper(text.WithCollection(assets.FontCollection()))
+	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
 	th.Palette.ContrastFg = WhiteColor
 	th.Palette.ContrastBg = BlueGreyColor
 }
@@ -63,15 +62,6 @@ func SetCurrent(key string) {
 
 func IsDarkModeOn() bool {
 	return current == DARK
-}
-
-func GetImage(imgKey string) *widget.Image {
-	img, exists := imageMap[imgKey]
-	if !exists {
-		log.Printf("key[%s] does not exist", imgKey)
-		return nil
-	}
-	return img[current]
 }
 
 type Backdrop struct {

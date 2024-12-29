@@ -7,7 +7,7 @@ import (
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
-	"github.com/maxazimi/v2ray-gio/ui/theme"
+	"github.com/maxazimi/qr/ui/theme"
 	"golang.org/x/exp/shiny/materialdesign/icons"
 	"image"
 	"image/color"

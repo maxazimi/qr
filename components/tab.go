@@ -5,9 +5,9 @@ import (
 	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
-	"github.com/maxazimi/v2ray-gio/ui/lang"
-	"github.com/maxazimi/v2ray-gio/ui/theme"
-	"github.com/maxazimi/v2ray-gio/ui/values"
+	"github.com/maxazimi/qr/ui/lang"
+	"github.com/maxazimi/qr/ui/theme"
+	"github.com/maxazimi/qr/ui/values"
 	"image"
 )
 
