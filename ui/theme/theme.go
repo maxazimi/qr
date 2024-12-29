@@ -64,6 +64,10 @@ func IsDarkModeOn() bool {
 	return current == DARK
 }
 
+func GetImage(imgKey string) *widget.Image {
+	return nil
+}
+
 type Backdrop struct {
 	widget.Clickable
 }

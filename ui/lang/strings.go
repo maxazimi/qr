@@ -3,7 +3,7 @@ package lang
 import (
 	"bufio"
 	"fmt"
-	"github.com/maxazimi/v2ray-gio/ui/lang/locale"
+	locale2 "github.com/maxazimi/qr/ui/lang/locale"
 	"regexp"
 	"strings"
 )
@@ -44,8 +44,8 @@ func init() {
 	}
 
 	langStrings = make(map[string]map[string]string)
-	langStrings["en"] = readIntoMap(locale.EN)
-	langStrings["fa"] = readIntoMap(locale.FA)
+	langStrings["en"] = readIntoMap(locale2.EN)
+	langStrings["fa"] = readIntoMap(locale2.FA)
 }
 
 func trimQuotes(s string) string {

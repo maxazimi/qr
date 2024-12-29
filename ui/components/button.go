@@ -165,7 +165,7 @@ func (b *Button) Layout(gtx C) D {
 	th := theme.Current()
 
 	if b.Loading {
-		b.img = theme.GetImage(theme.ICLoading)
+		//b.img = theme.GetImage(theme.ICLoading)
 	} else if b.ImgKey != "" {
 		b.img = theme.GetImage(b.ImgKey)
 	}
