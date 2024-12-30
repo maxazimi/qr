@@ -13,7 +13,6 @@ import (
 	"github.com/maxazimi/qr/ui/anim"
 	"github.com/maxazimi/qr/ui/instance"
 	"github.com/maxazimi/qr/ui/theme"
-	"github.com/maxazimi/qr/ui/values"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
 	"image/color"
@@ -221,9 +220,9 @@ func (m *Modal) Layout(gtx C, w layout.Widget) D {
 	}
 
 	inset := m.OuterInset
-	if width := instance.CurrentAppWidth(); width > values.MaxMobileWidth &&
+	if width := instance.CurrentAppWidth(); width > instance.MaxMobileWidth() &&
 		m.OuterInset.Left == m.OuterInset.Right {
-		padding := (width - values.MaxMobileWidth) / 2
+		padding := (width - instance.MaxMobileWidth()) / 2
 		inset.Left += padding
 		inset.Right += padding
 	}
