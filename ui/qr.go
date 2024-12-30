@@ -2,8 +2,8 @@ package ui
 
 import (
 	"gioui.org/f32"
-	"gioui.org/font"
 	"gioui.org/layout"
+	"gioui.org/op"
 	"gioui.org/op/clip"
 	"gioui.org/op/paint"
 	"gioui.org/unit"
@@ -14,7 +14,6 @@ import (
 	"github.com/maxazimi/qr/ui/anim"
 	"github.com/maxazimi/qr/ui/components"
 	"github.com/maxazimi/qr/ui/instance"
-	"github.com/maxazimi/qr/ui/lang"
 	"github.com/maxazimi/qr/ui/theme"
 	"github.com/tanema/gween"
 	"github.com/tanema/gween/ease"
@@ -24,34 +23,26 @@ import (
 )
 
 type QRScanner struct {
-	cameraImage  *components.Image
-	buttonCancel *components.Button
-	animation    *anim.Animation
-
-	scanning          bool
+	cameraImage       *components.Image
+	animation         *anim.Animation
+	width, height     int
+	cameraOrientation int
 	value             string
 	err               error
-	cameraOrientation int
+	scanning          bool
 	opened            bool
-
-	resultChan chan string
+	resultChan        chan string
 }
 
 var (
 	qrScannerInstance *QRScanner
+	loading           = true
 )
 
 func NewQRScanner() *QRScanner {
 	if qrScannerInstance != nil {
 		return qrScannerInstance
 	}
-
-	buttonCancel := components.NewButton(components.ButtonStyle{
-		Radius:   5,
-		TextSize: 14,
-		Inset:    layout.UniformInset(10),
-	})
-	buttonCancel.Font.Weight = font.Bold
 
 	cameraImage := &components.Image{
 		Fit:    components.Contain,
@@ -64,9 +55,8 @@ func NewQRScanner() *QRScanner {
 	))
 
 	qrScannerInstance = &QRScanner{
-		cameraImage:  cameraImage,
-		buttonCancel: buttonCancel,
-		animation:    animation,
+		cameraImage: cameraImage,
+		animation:   animation,
 	}
 	return qrScannerInstance
 }
@@ -76,7 +66,7 @@ func (q *QRScanner) scan() {
 		return
 	}
 
-	if err := camera.Open(0, 640, 480); err != nil {
+	if err := camera.Open(0, q.width, q.height); err != nil {
 		q.err = err
 		return
 	}
@@ -118,7 +108,12 @@ func (q *QRScanner) scan() {
 	}()
 }
 
-func (q *QRScanner) Open() <-chan string {
+func (q *QRScanner) Open(width, height int) <-chan string {
+	time.AfterFunc(3*time.Second, func() {
+		loading = false
+	})
+	q.width = width
+	q.height = height
 	q.scan()
 	q.animation.Start()
 	q.opened = true
@@ -148,50 +143,22 @@ func (q *QRScanner) Close() {
 }
 
 func (q *QRScanner) Layout(gtx C) D {
-	if q.buttonCancel.Clicked(gtx) {
-		q.Close()
+	th := theme.Current()
+
+	var children []layout.FlexChild
+	if q.scanning {
+		children = append(children, layout.Rigid(q.layoutPreview))
 	}
 
-	th := theme.Current().Theme
-	return layout.UniformInset(15).Layout(gtx, func(gtx C) D {
-		var children []layout.FlexChild
-		if q.scanning {
-			children = append(children, layout.Rigid(q.layoutPreview))
-		}
-
-		if q.err != nil {
-			children = append(children,
-				layout.Rigid(func(gtx C) D {
-					lbl := material.Label(th, unit.Sp(14), q.err.Error())
-					return lbl.Layout(gtx)
-				}),
-				layout.Rigid(layout.Spacer{Height: unit.Dp(15)}.Layout),
-				layout.Rigid(func(gtx C) D {
-					return layout.Flex{Alignment: layout.Middle}.Layout(gtx,
-						layout.Flexed(1, func(gtx C) D {
-							q.buttonCancel.Text = lang.Str("cancel")
-							q.buttonCancel.Colors = theme.Current().ButtonColors
-							return q.buttonCancel.Layout(gtx)
-						}),
-					)
-				}),
-			)
-		}
-
-		if q.scanning {
-			children = append(children,
-				layout.Rigid(layout.Spacer{Height: 15}.Layout),
-				layout.Rigid(func(gtx C) D {
-					return layout.Flex{Alignment: layout.Middle}.Layout(gtx, layout.Flexed(1, func(gtx C) D {
-						q.buttonCancel.Text = lang.Str("cancel")
-						q.buttonCancel.Colors = theme.Current().ButtonColors
-						return q.buttonCancel.Layout(gtx)
-					}))
-				}),
-			)
-		}
-		return layout.Flex{Axis: layout.Vertical}.Layout(gtx, children...)
-	})
+	if q.err != nil {
+		children = append(children,
+			layout.Rigid(func(gtx C) D {
+				lbl := material.Label(th.Theme, unit.Sp(14), q.err.Error())
+				return lbl.Layout(gtx)
+			}),
+		)
+	}
+	return layout.Flex{Axis: layout.Vertical}.Layout(gtx, children...)
 }
 
 func (q *QRScanner) layoutPreview(gtx C) D {
@@ -209,8 +176,9 @@ func (q *QRScanner) layoutPreview(gtx C) D {
 	return layout.Stack{}.Layout(gtx,
 		layout.Stacked(videoWidget),
 		layout.Stacked(func(gtx C) D {
-			const offset = 20
+			const offset = 30
 			bounds := image.Rect(offset*2, offset, imageDims.Size.X-offset*2, imageDims.Size.Y-offset)
+			makeSquare(&bounds)
 			lineHeight := 0
 
 			if q.animation.IsActive() {
@@ -224,8 +192,8 @@ func (q *QRScanner) layoutPreview(gtx C) D {
 			}
 
 			line := clip.Rect{
-				Min: image.Point{X: bounds.Min.X, Y: lineHeight - 1},
-				Max: image.Point{X: bounds.Max.X, Y: lineHeight + 1},
+				Min: image.Point{X: bounds.Min.X + 5, Y: lineHeight - 1},
+				Max: image.Point{X: bounds.Max.X - 5, Y: lineHeight + 1},
 			}.Op()
 			paint.FillShape(gtx.Ops, theme.WhiteColor, line)
 
@@ -235,13 +203,87 @@ func (q *QRScanner) layoutPreview(gtx C) D {
 	)
 }
 
+var (
+	ops         op.Ops
+	cachedShape op.CallOp
+	cachedSize  image.Point
+)
+
 func drawRectangle(gtx C, bounds image.Rectangle) {
 	var path clip.Path
-	path.Begin(gtx.Ops)
-	path.MoveTo(f32.Pt(float32(bounds.Min.X), float32(bounds.Min.Y)))
-	path.LineTo(f32.Pt(float32(bounds.Max.X), float32(bounds.Min.Y)))
-	path.LineTo(f32.Pt(float32(bounds.Max.X), float32(bounds.Max.Y)))
-	path.LineTo(f32.Pt(float32(bounds.Min.X), float32(bounds.Max.Y)))
-	path.Close()
-	paint.FillShape(gtx.Ops, theme.WhiteColor, clip.Stroke{Path: path.End(), Width: 2}.Op())
+
+	if !gtx.Constraints.Max.Eq(cachedSize) || loading {
+		cachedSize = gtx.Constraints.Max
+
+		macro := op.Record(&ops)
+		path.Begin(&ops)
+
+		// Calculate the partials
+		const factor = 6
+		width := float32(bounds.Dx())
+		height := float32(bounds.Dy())
+		partialWidth := width / factor
+		partialHeight := height / factor
+
+		// Top-left corner
+		path.MoveTo(f32.Pt(float32(bounds.Min.X), float32(bounds.Min.Y)))
+		path.LineTo(f32.Pt(float32(bounds.Min.X)+partialWidth, float32(bounds.Min.Y)))
+
+		// Top-right corner
+		path.MoveTo(f32.Pt(float32(bounds.Max.X)-partialWidth, float32(bounds.Min.Y)))
+		path.LineTo(f32.Pt(float32(bounds.Max.X), float32(bounds.Min.Y)))
+
+		// Right-top corner
+		path.MoveTo(f32.Pt(float32(bounds.Max.X), float32(bounds.Min.Y)))
+		path.LineTo(f32.Pt(float32(bounds.Max.X), float32(bounds.Min.Y)+partialHeight))
+
+		// Right-bottom corner
+		path.MoveTo(f32.Pt(float32(bounds.Max.X), float32(bounds.Max.Y)-partialHeight))
+		path.LineTo(f32.Pt(float32(bounds.Max.X), float32(bounds.Max.Y)))
+
+		// Bottom-right corner
+		path.MoveTo(f32.Pt(float32(bounds.Max.X), float32(bounds.Max.Y)))
+		path.LineTo(f32.Pt(float32(bounds.Max.X)-partialWidth, float32(bounds.Max.Y)))
+
+		// Bottom-left corner
+		path.MoveTo(f32.Pt(float32(bounds.Min.X)+partialWidth, float32(bounds.Max.Y)))
+		path.LineTo(f32.Pt(float32(bounds.Min.X), float32(bounds.Max.Y)))
+
+		// Left-bottom corner
+		path.MoveTo(f32.Pt(float32(bounds.Min.X), float32(bounds.Max.Y)))
+		path.LineTo(f32.Pt(float32(bounds.Min.X), float32(bounds.Max.Y)-partialHeight))
+
+		// Left-top corner
+		path.MoveTo(f32.Pt(float32(bounds.Min.X), float32(bounds.Min.Y)+partialHeight))
+		path.LineTo(f32.Pt(float32(bounds.Min.X), float32(bounds.Min.Y)))
+
+		path.Close()
+		paint.FillShape(&ops, theme.WhiteColor, clip.Stroke{Path: path.End(), Width: 2}.Op())
+
+		cachedShape = macro.Stop()
+	}
+
+	cachedShape.Add(gtx.Ops)
+}
+
+func makeSquare(b *image.Rectangle) {
+	deltaX := sub(b.Max.X, b.Min.X)
+	deltaY := sub(b.Max.Y, b.Min.Y)
+
+	if deltaX > deltaY {
+		diff := (deltaX - deltaY) / 2
+		b.Min.X += diff
+		b.Max.X -= diff
+	} else {
+		diff := (deltaY - deltaX) / 2
+		b.Min.Y += diff
+		b.Max.Y -= diff
+	}
+}
+
+func sub(a, b int) int {
+	if a > b {
+		return a - b
+	}
+	return b - a
 }

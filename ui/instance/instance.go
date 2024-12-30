@@ -3,8 +3,12 @@ package instance
 import (
 	"gioui.org/app"
 	"gioui.org/unit"
-	"github.com/maxazimi/qr/ui/values"
 	"sync"
+)
+
+const (
+	AppWidth  = unit.Dp(500)
+	AppHeight = unit.Dp(500)
 )
 
 var (
@@ -12,10 +16,12 @@ var (
 	windowMtx       sync.Mutex
 	currentAppWidth unit.Dp
 	isMobileView    bool
+	maxMobileWidth  unit.Dp
 )
 
 func init() {
 	window = new(app.Window)
+	SetWindowSize(AppWidth, AppHeight)
 }
 
 func SetWindowTitle(title string) {
@@ -24,6 +30,7 @@ func SetWindowTitle(title string) {
 
 func SetWindowSize(width, height unit.Dp) {
 	window.Option(app.Size(width, height))
+	maxMobileWidth = width
 }
 
 func Window() *app.Window {
@@ -34,7 +41,7 @@ func Window() *app.Window {
 
 func SetCurrentAppWidth(appWidth int, metric unit.Metric) {
 	currentAppWidth = metric.PxToDp(appWidth)
-	isMobileView = currentAppWidth <= values.MaxMobileWidth
+	isMobileView = currentAppWidth <= maxMobileWidth
 }
 
 func CurrentAppWidth() unit.Dp {
@@ -44,4 +51,8 @@ func CurrentAppWidth() unit.Dp {
 // IsMobileView returns true if the app's window width is less than the mobile view width.
 func IsMobileView() bool {
 	return isMobileView
+}
+
+func MaxMobileWidth() unit.Dp {
+	return maxMobileWidth
 }

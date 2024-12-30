@@ -27,9 +27,7 @@ public class App extends Application implements Application.ActivityLifecycleCal
 		mCurrentActivity = activity;
 		DisplayMetrics displayMetrics = new DisplayMetrics();
 		mCurrentActivity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-
-		//Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
-		//startActivity(browserIntent);
+		onActivityCreated(displayMetrics.widthPixels, displayMetrics.heightPixels);
 	}
 	@Override
 	public void onActivityStarted(Activity activity) {
@@ -74,4 +72,12 @@ public class App extends Application implements Application.ActivityLifecycleCal
 					PERMISSION_REQUEST);
 		}
 	}
+
+	private void openUrl(String url) {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+		browserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		startActivity(browserIntent);
+	}
+
+	private static native void onActivityCreated(int width, int height);
 }

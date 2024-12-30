@@ -36,8 +36,8 @@ endif
 
 all: $(OS_TARGET)
 
-apk_install: android
-	@adb install -r $(APP_NAME).apk
+apk_install: $(DEBUG_APK)
+	@adb install -r $<
 	@adb shell am start -n $(APPID)/org.gioui.GioActivity
 
 android: $(DEBUG_APK)

@@ -2,6 +2,8 @@ package ev
 
 type Event interface{}
 
+type AppLoadEvent struct{}
+
 type WindowSizeEvent struct {
 	Width, Height int
 }

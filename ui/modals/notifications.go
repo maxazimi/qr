@@ -13,7 +13,7 @@ import (
 
 const (
 	closeAfterDefault = 3 * time.Second
-	modalRadius       = unit.Dp(15)
+	modalRadius       = unit.Dp(25)
 )
 
 const (
