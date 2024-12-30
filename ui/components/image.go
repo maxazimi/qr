@@ -13,6 +13,11 @@ import (
 	"sync"
 )
 
+type (
+	C = layout.Context
+	D = layout.Dimensions
+)
+
 type Transform func(dims D, trans f32.Affine2D) f32.Affine2D
 
 type Image struct {

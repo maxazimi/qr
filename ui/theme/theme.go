@@ -8,7 +8,6 @@ import (
 	"gioui.org/text"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/maxazimi/qr/config"
 	"image"
 	"image/color"
 	"strings"
@@ -56,16 +55,6 @@ func SetCurrent(key string) {
 		Themes[current].Theme.Palette.Bg = Themes[current].BackgroundColor
 		Themes[current].Theme.Palette.Fg = Themes[current].ForegroundColor
 	}
-
-	config.Get().ThemeName = name
-}
-
-func IsDarkModeOn() bool {
-	return current == DARK
-}
-
-func GetImage(imgKey string) *widget.Image {
-	return nil
 }
 
 type Backdrop struct {
@@ -76,27 +65,6 @@ func (b *Backdrop) Layout(gtx C) D {
 	return b.Clickable.Layout(gtx, func(gtx C) D {
 		return Fill(gtx, Themes[current].BackgroundColor)
 	})
-}
-
-type InputColors struct {
-	BorderColor     color.NRGBA
-	BackgroundColor color.NRGBA
-	TextColor       color.NRGBA
-	HintColor       color.NRGBA
-}
-
-type ButtonColors struct {
-	TextColor            color.NRGBA
-	BackgroundColor      color.NRGBA
-	HoverBackgroundColor *color.NRGBA
-	HoverTextColor       *color.NRGBA
-	BorderColor          color.NRGBA
-}
-
-func (b ButtonColors) Reverse() ButtonColors {
-	b.TextColor, b.BackgroundColor = b.BackgroundColor, b.TextColor
-	b.BorderColor = b.TextColor
-	return b
 }
 
 type ModalColors struct {
@@ -110,17 +78,6 @@ type NotificationColors struct {
 	TitleColor      color.NRGBA
 	TextColor       color.NRGBA
 	BackgroundColor color.NRGBA
-}
-
-type SwitchColors struct {
-	ActiveColor       color.NRGBA
-	InactiveColor     color.NRGBA
-	ThumbColor        color.NRGBA
-	ActiveTextColor   color.NRGBA
-	InactiveTextColor color.NRGBA
-}
-
-type Colors struct {
 }
 
 type Theme struct {
@@ -153,43 +110,8 @@ type Theme struct {
 	GrayText3Color   color.NRGBA
 	GrayText4Color   color.NRGBA
 
-	// Button
-	ButtonColors ButtonColors
-
-	// Input
-	InputColors InputColors
-
-	// Clickable
-	ClickableColor      color.NRGBA
-	ClickableHoverColor color.NRGBA
-
-	// Card
-	CardColor      color.NRGBA
-	CardHoverColor color.NRGBA
-
-	// Switch
-	SwitchColors SwitchColors
-
 	// Modal
-	ModalColors       ModalColors
-	ModalButtonColors ButtonColors
-
-	// AppBar
-	AppBarColors ButtonColors
-
-	// Bottom Bar
-	BottomBarBgColor          color.NRGBA
-	BottomButtonColors        ButtonColors
-	BottomButtonSelectedColor color.NRGBA
-	BottomShadowColor         color.NRGBA
-
-	// List
-	ListTextColor        color.NRGBA
-	ListBgColor          color.NRGBA
-	ListItemBgColor      color.NRGBA
-	ListItemHoverBgColor color.NRGBA
-	ListItemTagBgColor   color.NRGBA
-	ListItemTagTextColor color.NRGBA
+	ModalColors ModalColors
 }
 
 func Fill(gtx C, col color.NRGBA) D {

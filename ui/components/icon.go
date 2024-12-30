@@ -4,6 +4,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"image/color"
+	"log"
 )
 
 type Icon struct {
@@ -11,7 +12,6 @@ type Icon struct {
 	Color color.NRGBA
 }
 
-// NewIcon returns a new Icon from IconVG data.
 func NewIcon(data []byte) *Icon {
 	return &Icon{
 		Icon:  MustIcon(widget.NewIcon(data)),
@@ -26,4 +26,11 @@ func (icon *Icon) LayoutSize(gtx C, iconSize unit.Dp) D {
 
 func (icon *Icon) Layout(gtx C, col color.NRGBA) D {
 	return icon.Icon.Layout(gtx, col)
+}
+
+func MustIcon(ic *widget.Icon, err error) *widget.Icon {
+	if err != nil {
+		log.Fatal(err)
+	}
+	return ic
 }
