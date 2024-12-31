@@ -10,7 +10,7 @@ import (
 	"gioui.org/widget/material"
 	"github.com/makiuchi-d/gozxing"
 	"github.com/makiuchi-d/gozxing/qrcode"
-	"github.com/maxazimi/qr/camera"
+	"github.com/maxazimi/camera"
 	"github.com/maxazimi/qr/ui/anim"
 	"github.com/maxazimi/qr/ui/components"
 	"github.com/maxazimi/qr/ui/instance"
