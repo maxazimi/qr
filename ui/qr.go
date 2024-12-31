@@ -109,9 +109,13 @@ func (q *QRScanner) scan() {
 }
 
 func (q *QRScanner) Open(width, height int) <-chan string {
+	if q.opened {
+		return nil
+	}
 	time.AfterFunc(3*time.Second, func() {
 		loading = false
 	})
+
 	q.width = width
 	q.height = height
 	q.scan()
@@ -130,16 +134,13 @@ func (q *QRScanner) Close() {
 		return
 	}
 
+	q.opened = false
 	q.scanning = false
 	camera.Close()
 
-	select {
-	case q.resultChan <- q.value:
-	}
-
+	q.resultChan <- q.value
 	q.value = ""
 	close(q.resultChan)
-	q.opened = false
 }
 
 func (q *QRScanner) Layout(gtx C) D {
