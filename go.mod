@@ -7,7 +7,9 @@ require (
 	gioui.org/cmd v0.7.1
 	git.wow.st/gmp/jni v0.0.0-20210610011705-34026c7e22d0
 	github.com/makiuchi-d/gozxing v0.1.1
+	github.com/maxazimi/camera v1.0.1
 	github.com/tanema/gween v0.0.0-20221212145351-621cc8a459d1
+	golang.org/x/exp/shiny v0.0.0-20240707233637-46b078467d37
 	golang.org/x/image v0.18.0
 )
 
@@ -17,7 +19,6 @@ require (
 	github.com/akavel/rsrc v0.10.1 // indirect
 	github.com/go-text/typesetting v0.1.1 // indirect
 	golang.org/x/exp v0.0.0-20240707233637-46b078467d37 // indirect
-	golang.org/x/exp/shiny v0.0.0-20240707233637-46b078467d37 // indirect
 	golang.org/x/mod v0.19.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
